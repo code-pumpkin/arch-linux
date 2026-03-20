@@ -1738,11 +1738,16 @@ if [ -d /root/wm-configs ]; then
     echo "Config templates deployed to \$cfg/"
 fi
 
-# Set X11 keyboard layout system-wide
+# Set X11 keyboard layout system-wide (localectl doesn't work in chroot)
+mkdir -p /etc/X11/xorg.conf.d
+cat > /etc/X11/xorg.conf.d/00-keyboard.conf << KBEOF
+Section "InputClass"
+    Identifier "system-keyboard"
+    MatchIsKeyboard "on"
+    Option "XkbLayout" "${KB_LAYOUT}"
+KBEOF
 if [ -n "${KB_VARIANT}" ]; then
-    localectl set-x11-keymap ${KB_LAYOUT} "" ${KB_VARIANT} 2>/dev/null || true
-else
-    localectl set-x11-keymap ${KB_LAYOUT} 2>/dev/null || true
+    sed -i '/XkbLayout/a\\    Option "XkbVariant" "${KB_VARIANT}"' /etc/X11/xorg.conf.d/00-keyboard.conf
 fi
 
 # Enable eGPU service if deployed
