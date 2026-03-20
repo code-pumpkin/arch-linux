@@ -1729,9 +1729,9 @@ if id "${username}" &>/dev/null; then
         echo "Aborting user setup."
         exit 1
     fi
-    usermod -aG wheel ${username}
+    usermod -aG wheel,video,input ${username}
 else
-    useradd -m -G wheel -s /bin/bash ${username}
+    useradd -m -G wheel,video,input -s /bin/bash ${username}
 fi
 echo "Set password for ${username}:"
 passwd ${username}
