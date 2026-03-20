@@ -223,6 +223,40 @@ analyze_partitions() {
 }
 
 # ============================================================
+# EFI Backup (before any destructive disk operation)
+# ============================================================
+backup_efi() {
+    # Find EFI partition on the selected disk
+    local efi_part
+    efi_part=$(lsblk -lpno NAME,PARTTYPE "$DISK" | grep -i "c12a7328-f81f-11d2-ba4b-00a0c93ec93b" | awk '{print $1}' | head -1)
+    if [ -z "$efi_part" ]; then
+        info "No EFI partition found on $DISK — nothing to back up."
+        return
+    fi
+
+    local backup_dir="/root/efi-backup-$(date +%Y%m%d%H%M%S)"
+    local tmp_mount="/tmp/efi-backup-mount"
+    mkdir -p "$tmp_mount"
+
+    # Mount EFI if not already mounted
+    if ! mountpoint -q "$tmp_mount"; then
+        mount -o ro "$efi_part" "$tmp_mount" 2>/dev/null || {
+            warn "Could not mount EFI partition $efi_part for backup."
+            rmdir "$tmp_mount" 2>/dev/null
+            return
+        }
+    fi
+
+    mkdir -p "$backup_dir"
+    cp -a "$tmp_mount"/. "$backup_dir/"
+    umount "$tmp_mount" 2>/dev/null
+    rmdir "$tmp_mount" 2>/dev/null
+
+    msg "EFI partition backed up to $backup_dir"
+    info "To restore later, run: ./nuke-recovery.sh $backup_dir"
+}
+
+# ============================================================
 # PHASE 3: Partition Mode Selection & Creation
 # ============================================================
 select_partition_mode() {
@@ -360,6 +394,7 @@ handle_existing_disk() {
         wipe)
             warn "THIS WILL DESTROY ALL DATA ON $DISK"
             confirm "Are you absolutely sure?" || exit 1
+            backup_efi
             # Tear down any active LVM/LUKS on this disk before wiping
             swapoff -a 2>/dev/null || true
             umount -R /mnt 2>/dev/null || true
@@ -452,6 +487,7 @@ reuse_existing_partition() {
             2)
                 warn "Deleting $picked — all data will be lost."
                 confirm "Proceed?" || exit 1
+                backup_efi
                 swapoff "$picked" 2>/dev/null || true
                 umount "$picked" 2>/dev/null || true
                 # Tear down LUKS/LVM if present
