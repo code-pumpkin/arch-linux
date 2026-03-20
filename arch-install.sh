@@ -1311,15 +1311,11 @@ install_packages() {
     local gpu_pkgs=""
     if lspci 2>/dev/null | grep -qi "intel.*graphics\|intel.*gpu\|UHD\|Iris"; then
         info "Intel GPU detected."
-        gpu_pkgs="mesa vulkan-intel intel-media-driver libva-intel-driver"
-        # Intel audio firmware (sof-firmware for newer Intel laptops)
-        gpu_pkgs="$gpu_pkgs sof-firmware"
+        gpu_pkgs="mesa vulkan-intel intel-media-driver sof-firmware"
     fi
     if lspci 2>/dev/null | grep -qi "amd.*radeon\|amd.*graphics\|ATI\|RADV"; then
         info "AMD GPU detected."
-        gpu_pkgs="$gpu_pkgs mesa vulkan-radeon libva-mesa-driver mesa-vdpau"
-        # AMD audio firmware
-        gpu_pkgs="$gpu_pkgs sof-firmware"
+        gpu_pkgs="$gpu_pkgs mesa vulkan-radeon sof-firmware"
     fi
     if lspci 2>/dev/null | grep -qi "nvidia"; then
         info "NVIDIA GPU detected."
