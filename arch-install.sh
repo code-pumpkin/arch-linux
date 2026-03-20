@@ -1493,7 +1493,9 @@ NMEOF
     # --- X11/Wayland keyboard layout (XKB packages now installed) ---
     # user_custom has hardcoded colemak_dh — skip keyboard picker
     if [ "$WM_CHOICE" != "none" ] && [ "$WM_CHOICE" != "user_custom" ]; then
-        local xkb_file="/mnt/usr/share/X11/xkb/rules/base.lst"
+        local xkb_file="/mnt/usr/share/xkeyboard-config-2/rules/base.lst"
+        # Fallback to symlink path
+        [ -f "$xkb_file" ] || xkb_file="/mnt/usr/share/X11/xkb/rules/base.lst"
         if [ -f "$xkb_file" ]; then
             header "Keyboard Layout (GUI)"
             info "X11 keyboard layout — type a search term to filter (e.g., us, fr, de, gb):"
