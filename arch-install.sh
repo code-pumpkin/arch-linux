@@ -1688,7 +1688,11 @@ if [ "${AUR_HELPER}" != "none" ] && [ -n "${AUR_HELPER}" ]; then
     cd /tmp
     sudo -u ${username} git clone https://aur.archlinux.org/${AUR_HELPER}.git
     cd ${AUR_HELPER}
-    sudo -u ${username} makepkg -si --noconfirm
+    sudo -u ${username} makepkg -si --noconfirm || {
+        echo "ERROR: AUR helper install failed. If a conflicting package exists, run:"
+        echo "  pacman -Rns ${AUR_HELPER}-bin --noconfirm  (or vice versa)"
+        echo "Then re-run the installer and resume."
+    }
     cd /
     rm -rf /tmp/${AUR_HELPER}
     echo "AUR helper '${AUR_HELPER}' installed."
