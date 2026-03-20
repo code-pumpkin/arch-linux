@@ -2058,6 +2058,32 @@ main() {
     echo "  ╚══════════════════════════════════════╝"
     echo -e "${NC}"
 
+    # Set keyboard layout for the live session
+    info "Set your keyboard layout for this installer session?"
+    info "Common: us (QWERTY), colemak, dvorak — or press Enter to keep default."
+    local live_kb
+    read -rp "Search keymaps [skip]: " live_kb
+    if [ -n "$live_kb" ]; then
+        local -a kb_matches
+        mapfile -t kb_matches < <(localectl list-keymaps 2>/dev/null | grep -i "$live_kb")
+        if [ ${#kb_matches[@]} -eq 0 ]; then
+            warn "No keymaps matching '$live_kb'. Keeping default."
+        elif [ ${#kb_matches[@]} -eq 1 ]; then
+            loadkeys "${kb_matches[0]}" 2>/dev/null && msg "Loaded keymap: ${kb_matches[0]}" || warn "Failed to load keymap."
+        else
+            local j=1
+            for km in "${kb_matches[@]}"; do
+                echo "  $j) $km"
+                j=$((j+1))
+            done
+            local kp
+            read -rp "Pick [1-${#kb_matches[@]}]: " kp
+            if [[ "$kp" =~ ^[0-9]+$ ]] && [ "$kp" -ge 1 ] && [ "$kp" -le "${#kb_matches[@]}" ]; then
+                loadkeys "${kb_matches[$((kp-1))]}" 2>/dev/null && msg "Loaded keymap: ${kb_matches[$((kp-1))]}" || warn "Failed to load keymap."
+            fi
+        fi
+    fi
+
     local start_idx=0
 
     if resume_menu; then
