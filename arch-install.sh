@@ -1501,11 +1501,27 @@ setup_user_and_rice() {
     header "User Account Setup"
 
     local username
-    read -rp "Create non-root username: " username
-    while [ -z "$username" ]; do
-        warn "Username cannot be empty."
-        read -rp "Username: " username
-    done
+    # Check for existing non-root users from a previous run
+    local existing_user
+    existing_user=$(arch-chroot /mnt awk -F: '$3 >= 1000 && $3 < 65534 {print $1}' /etc/passwd 2>/dev/null | head -1)
+    if [ -n "$existing_user" ]; then
+        info "Existing user found: $existing_user"
+        if confirm "Continue with '$existing_user'?"; then
+            username="$existing_user"
+        else
+            read -rp "Create non-root username: " username
+            while [ -z "$username" ]; do
+                warn "Username cannot be empty."
+                read -rp "Username: " username
+            done
+        fi
+    else
+        read -rp "Create non-root username: " username
+        while [ -z "$username" ]; do
+            warn "Username cannot be empty."
+            read -rp "Username: " username
+        done
+    fi
 
     # Deploy bundled configs for the selected WM
     if [ "$WM_CHOICE" != "none" ] && [ -d "$SCRIPT_DIR/configs/$WM_CHOICE" ]; then
