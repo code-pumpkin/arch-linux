@@ -1456,6 +1456,8 @@ set -euo pipefail
 pacman -S --noconfirm --needed $base_pkgs $gpu_pkgs $wm_pkgs
 systemctl enable sshd
 systemctl enable NetworkManager
+systemctl enable iwd
+systemctl enable systemd-resolved
 PKGEOF
 
     # KDE needs SDDM display manager
@@ -1475,6 +1477,13 @@ PKGEOF
     chmod +x /mnt/root/pkg-setup.sh
     arch-chroot /mnt /usr/bin/bash /root/pkg-setup.sh
     rm /mnt/root/pkg-setup.sh
+
+    # Configure NetworkManager to use iwd as WiFi backend
+    mkdir -p /mnt/etc/NetworkManager/conf.d
+    cat > /mnt/etc/NetworkManager/conf.d/wifi-backend.conf << 'NMEOF'
+[device]
+wifi.backend=iwd
+NMEOF
 
     # --- X11/Wayland keyboard layout (XKB packages now installed) ---
     # user_custom has hardcoded colemak_dh — skip keyboard picker
