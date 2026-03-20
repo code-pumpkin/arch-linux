@@ -1673,9 +1673,9 @@ setup_user_and_rice() {
     # Build session hint
     local session_hint=""
     case "$WM_CHOICE" in
-        i3|user_custom) session_hint="i3 starts automatically after boot." ;;
-        sway)           session_hint="Sway starts automatically after boot." ;;
-        hyprland)       session_hint="Hyprland starts automatically after boot." ;;
+        i3|user_custom) session_hint="Log in and type 'startx' to launch i3." ;;
+        sway)           session_hint="Log in and type 'sway' to launch Sway." ;;
+        hyprland)       session_hint="Log in and type 'Hyprland' to launch Hyprland." ;;
         kde)            session_hint="KDE starts automatically via SDDM." ;;
         none)           session_hint="No graphical environment installed." ;;
     esac
@@ -1780,6 +1780,8 @@ if [ -d /root/wm-configs ]; then
 fi
 
 # Set X11 keyboard layout system-wide (localectl doesn't work in chroot)
+# Skip for user_custom — has its own colemak_dh in .xinitrc
+if [ "${WM_CHOICE}" != "user_custom" ]; then
 mkdir -p /etc/X11/xorg.conf.d
 cat > /etc/X11/xorg.conf.d/00-keyboard.conf << KBEOF
 Section "InputClass"
@@ -1789,6 +1791,7 @@ Section "InputClass"
 KBEOF
 if [ -n "${KB_VARIANT}" ]; then
     sed -i '/XkbLayout/a\\    Option "XkbVariant" "${KB_VARIANT}"' /etc/X11/xorg.conf.d/00-keyboard.conf
+fi
 fi
 
 # Enable eGPU service if deployed
@@ -1801,7 +1804,7 @@ fi
 
 # Create .xinitrc for X11-based WMs
 case "${WM_CHOICE}" in
-    i3|user_custom)
+    i3)
         cat > /home/${username}/.xinitrc << 'XINITEOF'
 #!/bin/sh
 [ -f ~/.Xresources ] && xrdb -merge ~/.Xresources
@@ -1810,50 +1813,23 @@ XINITEOF
         chmod +x /home/${username}/.xinitrc
         chown ${username}:${username} /home/${username}/.xinitrc
         ;;
-esac
-
-# Auto-login on TTY1 and launch session
-case "${WM_CHOICE}" in
-    i3|user_custom|sway|hyprland)
-        # Getty autologin on TTY1
-        mkdir -p /etc/systemd/system/getty@tty1.service.d
-        cat > /etc/systemd/system/getty@tty1.service.d/autologin.conf << GETTYEOF
-[Service]
-ExecStart=
-ExecStart=-/sbin/agetty --autologin ${username} --noclear %I \\\$TERM
-GETTYEOF
-
-        # Auto-launch session from .bash_profile
-        case "${WM_CHOICE}" in
-            i3|user_custom)
-                cat >> /home/${username}/.bash_profile << 'AUTOXEOF'
-
-# Auto-start i3
-if [ -z "\$DISPLAY" ] && [ "\$(tty)" = "/dev/tty1" ]; then
-    exec startx
+    user_custom)
+        cat > /home/${username}/.xinitrc << 'XINITEOF'
+#!/bin/sh
+export XDG_SESSION_TYPE=x11
+export XDG_SESSION_DESKTOP=i3
+export XDG_CURRENT_DESKTOP=i3
+[ -f ~/.Xresources ] && xrdb -merge ~/.Xresources
+setxkbmap us -variant colemak_dh
+if command -v nvidia-smi &> /dev/null && nvidia-smi &> /dev/null; then
+    [ -f ~/.screenlayout/layout-nvidia.sh ] && ~/.screenlayout/layout-nvidia.sh
+else
+    [ -f ~/.screenlayout/layout1.sh ] && ~/.screenlayout/layout1.sh
 fi
-AUTOXEOF
-                ;;
-            sway)
-                cat >> /home/${username}/.bash_profile << 'AUTOXEOF'
-
-# Auto-start Sway
-if [ -z "\$DISPLAY" ] && [ "\$(tty)" = "/dev/tty1" ]; then
-    exec sway
-fi
-AUTOXEOF
-                ;;
-            hyprland)
-                cat >> /home/${username}/.bash_profile << 'AUTOXEOF'
-
-# Auto-start Hyprland
-if [ -z "\$DISPLAY" ] && [ "\$(tty)" = "/dev/tty1" ]; then
-    exec Hyprland
-fi
-AUTOXEOF
-                ;;
-        esac
-        chown ${username}:${username} /home/${username}/.bash_profile
+exec i3
+XINITEOF
+        chmod +x /home/${username}/.xinitrc
+        chown ${username}:${username} /home/${username}/.xinitrc
         ;;
 esac
 
