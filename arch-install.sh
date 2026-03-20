@@ -40,6 +40,7 @@ WM_CHOICE=""       # i3 | user_custom | sway | hyprland | kde | none
 AUR_HELPER=""      # yay | paru | none
 BROWSER_PKG=""     # firefox | librewolf-bin | chromium | brave-bin | ""
 EGPU_SETUP=""      # yes | ""
+EGPU_NVIDIA=""     # 470xx | latest | ""
 
 HOME_PART=""
 EXTRA_LV_NAMES=()   # e.g., (data media)
@@ -1433,6 +1434,7 @@ install_packages() {
             wm_pkgs="i3-wm i3status i3lock polybar dunst rofi picom feh kitty flameshot"
             wm_pkgs="$wm_pkgs xorg-server xorg-xinit xorg-xrandr xorg-xsetroot dex"
             wm_pkgs="$wm_pkgs network-manager-applet xss-lock lm_sensors openvpn expect"
+            wm_pkgs="$wm_pkgs input-leap otf-font-awesome ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-common nvidia-prime dkms linux-headers"
             ;;
         sway)
             wm_pkgs="sway swaylock swayidle waybar mako wofi foot grim slurp ly"
@@ -1637,6 +1639,19 @@ WINEEOF
         info "Do you use an NVIDIA eGPU via Thunderbolt (Razer Core X)?"
         if confirm "Install eGPU auto-setup (bolt auth + nvidia driver loading + xorg config)?"; then
             EGPU_SETUP="yes"
+            echo ""
+            info "Which NVIDIA GPU is in your eGPU?"
+            echo -e "  ${BOLD}1)${NC} GTX 1050 or older (Kepler/Maxwell/Pascal ≤1050) — nvidia-470xx (AUR/DKMS)"
+            echo -e "  ${BOLD}2)${NC} GTX 1060 or newer — nvidia (latest, official repos)"
+            local nv_egpu
+            while true; do
+                read -rp "NVIDIA driver [1/2]: " nv_egpu
+                case "$nv_egpu" in
+                    1) EGPU_NVIDIA="470xx"; break ;;
+                    2) EGPU_NVIDIA="latest"; break ;;
+                    *) echo "Invalid choice." ;;
+                esac
+            done
             msg "eGPU setup will be deployed during user setup."
         fi
     fi
@@ -1823,6 +1838,10 @@ if [ -f /etc/systemd/system/nvidia-egpu.service ]; then
     systemctl enable bolt.service
     systemctl enable nvidia-egpu.service
     echo "eGPU auto-setup service enabled."
+    # Install NVIDIA driver based on GPU generation
+    if [ "${EGPU_NVIDIA}" != "470xx" ]; then
+        pacman -S --noconfirm --needed nvidia-dkms nvidia-utils nvidia-settings
+    fi
 fi
 
 # Create .xinitrc for X11-based WMs
@@ -1853,6 +1872,17 @@ exec i3
 XINITEOF
         chmod +x /home/${username}/.xinitrc
         chown ${username}:${username} /home/${username}/.xinitrc
+        # ~/startx helper — picks nvidia layout if eGPU is active
+        cat > /home/${username}/startx << 'STARTXEOF'
+#!/bin/bash
+if command -v nvidia-smi &> /dev/null && nvidia-smi &> /dev/null; then
+    startx -- -layout NvidiaLayout
+else
+    startx
+fi
+STARTXEOF
+        chmod +x /home/${username}/startx
+        chown ${username}:${username} /home/${username}/startx
         ;;
 esac
 
@@ -1883,6 +1913,16 @@ if [ -n "${BROWSER_PKG}" ]; then
             fi
             ;;
     esac
+fi
+
+# Install nvidia-470xx via AUR if eGPU needs legacy driver
+if [ "${EGPU_NVIDIA}" = "470xx" ]; then
+    if command -v ${AUR_HELPER} &>/dev/null; then
+        sudo -u ${username} ${AUR_HELPER} -S --noconfirm nvidia-470xx-dkms nvidia-470xx-utils opencl-nvidia-470xx
+    else
+        echo "ERROR: AUR helper not available. Install nvidia-470xx-dkms manually after reboot:"
+        echo "  ${AUR_HELPER} -S nvidia-470xx-dkms nvidia-470xx-utils opencl-nvidia-470xx"
+    fi
 fi
 
 # Enable pipewire user services
@@ -2089,6 +2129,7 @@ WM_CHOICE="$WM_CHOICE"
 AUR_HELPER="$AUR_HELPER"
 BROWSER_PKG="$BROWSER_PKG"
 EGPU_SETUP="$EGPU_SETUP"
+EGPU_NVIDIA="$EGPU_NVIDIA"
 EXTRA_LV_NAMES=($extra_names)
 EXTRA_LV_SIZES=($extra_sizes)
 EXTRA_LV_MOUNTS=($extra_mounts)
