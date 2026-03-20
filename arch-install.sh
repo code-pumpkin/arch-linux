@@ -1456,6 +1456,9 @@ install_packages() {
 #!/bin/bash
 set -euo pipefail
 pacman -S --noconfirm --needed $base_pkgs $gpu_pkgs $wm_pkgs
+
+# Service enables — non-fatal (some may be socket/dbus-activated)
+set +e
 systemctl enable sshd
 systemctl enable NetworkManager
 systemctl enable iwd
@@ -1477,7 +1480,7 @@ PKGEOF
     echo 'echo "Packages installed and services enabled."' >> /mnt/root/pkg-setup.sh
 
     chmod +x /mnt/root/pkg-setup.sh
-    arch-chroot /mnt /usr/bin/bash /root/pkg-setup.sh
+    arch-chroot /mnt /usr/bin/bash /root/pkg-setup.sh || warn "Some package setup steps had warnings (check above)."
     rm /mnt/root/pkg-setup.sh
 
     # Configure NetworkManager to use iwd as WiFi backend
@@ -1941,7 +1944,7 @@ echo "User ${username} created. ${session_hint}"
 USEREOF
 
     chmod +x /mnt/root/user-setup.sh
-    arch-chroot /mnt /usr/bin/bash /root/user-setup.sh
+    arch-chroot /mnt /usr/bin/bash /root/user-setup.sh || warn "Some user setup steps had warnings (check above)."
     rm -f /mnt/root/user-setup.sh
 }
 
