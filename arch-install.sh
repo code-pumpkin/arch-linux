@@ -1676,11 +1676,11 @@ esac
 if [ "${AUR_HELPER}" != "none" ] && [ -n "${AUR_HELPER}" ]; then
     pacman -S --noconfirm --needed base-devel git
     cd /tmp
-    sudo -u ${username} git clone https://aur.archlinux.org/${AUR_HELPER}-bin.git
-    cd ${AUR_HELPER}-bin
+    sudo -u ${username} git clone https://aur.archlinux.org/${AUR_HELPER}.git
+    cd ${AUR_HELPER}
     sudo -u ${username} makepkg -si --noconfirm
     cd /
-    rm -rf /tmp/${AUR_HELPER}-bin
+    rm -rf /tmp/${AUR_HELPER}
     echo "AUR helper '${AUR_HELPER}' installed."
 fi
 
