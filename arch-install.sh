@@ -1470,7 +1470,7 @@ PKGEOF
     # i3/sway/hyprland use ly display manager
     case "$WM_CHOICE" in
         i3|sway|hyprland)
-            echo 'systemctl enable ly' >> /mnt/root/pkg-setup.sh
+            echo 'systemctl enable ly@tty2' >> /mnt/root/pkg-setup.sh
             ;;
     esac
 
