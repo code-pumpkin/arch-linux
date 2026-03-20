@@ -1434,7 +1434,7 @@ install_packages() {
             wm_pkgs="i3-wm i3status i3lock polybar dunst rofi picom feh kitty flameshot"
             wm_pkgs="$wm_pkgs xorg-server xorg-xinit xorg-xrandr xorg-xsetroot dex"
             wm_pkgs="$wm_pkgs network-manager-applet xss-lock lm_sensors openvpn expect"
-            wm_pkgs="$wm_pkgs input-leap otf-font-awesome ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-common nvidia-prime dkms linux-headers"
+            wm_pkgs="$wm_pkgs input-leap otf-font-awesome ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-common nvidia-prime dkms linux-headers bolt"
             ;;
         sway)
             wm_pkgs="sway swaylock swayidle waybar mako wofi foot grim slurp ly"
@@ -1834,8 +1834,6 @@ fi
 
 # Enable eGPU service if deployed
 if [ -f /etc/systemd/system/nvidia-egpu.service ]; then
-    pacman -S --noconfirm --needed bolt
-    systemctl enable bolt.service
     systemctl enable nvidia-egpu.service
     echo "eGPU auto-setup service enabled."
     # Install NVIDIA driver based on GPU generation
