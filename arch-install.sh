@@ -1477,7 +1477,8 @@ PKGEOF
     rm /mnt/root/pkg-setup.sh
 
     # --- X11/Wayland keyboard layout (XKB packages now installed) ---
-    if [ "$WM_CHOICE" != "none" ]; then
+    # user_custom has hardcoded colemak_dh — skip keyboard picker
+    if [ "$WM_CHOICE" != "none" ] && [ "$WM_CHOICE" != "user_custom" ]; then
         local xkb_file="/mnt/usr/share/X11/xkb/rules/base.lst"
         if [ -f "$xkb_file" ]; then
             header "Keyboard Layout (GUI)"
