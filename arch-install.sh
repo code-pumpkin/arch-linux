@@ -1477,6 +1477,11 @@ PKGEOF
             ;;
     esac
 
+    # Remove uwsm session files (we don't install uwsm, and ly shows them causing confusion)
+    if [ "$WM_CHOICE" = "hyprland" ]; then
+        echo 'rm -f /usr/share/wayland-sessions/hyprland-uwsm.desktop' >> /mnt/root/pkg-setup.sh
+    fi
+
     echo 'echo "Packages installed and services enabled."' >> /mnt/root/pkg-setup.sh
 
     chmod +x /mnt/root/pkg-setup.sh
