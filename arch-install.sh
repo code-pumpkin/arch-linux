@@ -32,6 +32,7 @@ TIMEZONE=""
 LOCALE=""
 KEYMAP="us"
 KB_LAYOUT="us"
+KB_VARIANT=""
 HOSTNAME_VAL=""
 CPU_UCODE=""
 REUSE_EXISTING=false
@@ -988,10 +989,17 @@ gather_config() {
     done
 
     # X11/Wayland keyboard layout (separate from console keymap)
-    info "X11/Wayland keyboard layout (e.g., us, gb, de, fr, colemak_dh):"
+    info "X11/Wayland keyboard layout (e.g., us, gb, de, fr):"
     read -rp "Layout [us]: " KB_LAYOUT
     KB_LAYOUT="${KB_LAYOUT:-us}"
-    msg "X11 keyboard layout: $KB_LAYOUT"
+    info "X11/Wayland layout variant (e.g., colemak_dh, dvorak, intl — leave empty for default):"
+    read -rp "Variant []: " KB_VARIANT
+    KB_VARIANT="${KB_VARIANT:-}"
+    if [ -n "$KB_VARIANT" ]; then
+        msg "X11 keyboard: $KB_LAYOUT ($KB_VARIANT)"
+    else
+        msg "X11 keyboard: $KB_LAYOUT"
+    fi
 
     # Hostname
     read -rp "Hostname: " HOSTNAME_VAL
@@ -1593,7 +1601,11 @@ if [ -d /root/wm-configs ]; then
             cp /root/wm-configs/alacritty/* "\$cfg/alacritty/"
             chmod +x "\$cfg/polybar/launch.sh"
             # Set keyboard layout
-            echo "exec_always --no-startup-id setxkbmap -layout ${KB_LAYOUT}" >> "\$cfg/i3/config"
+            if [ -n "${KB_VARIANT}" ]; then
+                echo "exec_always --no-startup-id setxkbmap ${KB_LAYOUT} -variant ${KB_VARIANT}" >> "\$cfg/i3/config"
+            else
+                echo "exec_always --no-startup-id setxkbmap ${KB_LAYOUT}" >> "\$cfg/i3/config"
+            fi
             ;;
         user_custom)
             mkdir -p "\$cfg/i3" "\$cfg/polybar" "\$cfg/picom" "\$cfg/dunst" "\$cfg/rofi" "\$cfg/kitty" "\$cfg/flameshot" "\$cfg/fastfetch" "\$cfg/scripts" "\$cfg/sounds"
@@ -1624,6 +1636,9 @@ if [ -d /root/wm-configs ]; then
             cp /root/wm-configs/foot/* "\$cfg/foot/"
             # Set keyboard layout
             sed -i 's/xkb_layout us/xkb_layout ${KB_LAYOUT}/' "\$cfg/sway/config"
+            if [ -n "${KB_VARIANT}" ]; then
+                sed -i '/xkb_layout ${KB_LAYOUT}/a\\    xkb_variant ${KB_VARIANT}' "\$cfg/sway/config"
+            fi
             ;;
         hyprland)
             mkdir -p "\$cfg/hypr" "\$cfg/waybar" "\$cfg/wofi" "\$cfg/foot"
@@ -1633,6 +1648,9 @@ if [ -d /root/wm-configs ]; then
             cp /root/wm-configs/foot/* "\$cfg/foot/"
             # Set keyboard layout
             sed -i 's/kb_layout = us/kb_layout = ${KB_LAYOUT}/' "\$cfg/hypr/hyprland.conf"
+            if [ -n "${KB_VARIANT}" ]; then
+                sed -i '/kb_layout = ${KB_LAYOUT}/a\\    kb_variant = ${KB_VARIANT}' "\$cfg/hypr/hyprland.conf"
+            fi
             ;;
         kde)
             cp /root/wm-configs/kwinrc "\$cfg/kwinrc" 2>/dev/null || true
@@ -1646,7 +1664,11 @@ if [ -d /root/wm-configs ]; then
 fi
 
 # Set X11 keyboard layout system-wide
-localectl set-x11-keymap ${KB_LAYOUT} 2>/dev/null || true
+if [ -n "${KB_VARIANT}" ]; then
+    localectl set-x11-keymap ${KB_LAYOUT} "" ${KB_VARIANT} 2>/dev/null || true
+else
+    localectl set-x11-keymap ${KB_LAYOUT} 2>/dev/null || true
+fi
 
 # Enable eGPU service if deployed
 if [ -f /etc/systemd/system/nvidia-egpu.service ]; then
@@ -1934,6 +1956,7 @@ TIMEZONE="$TIMEZONE"
 LOCALE="$LOCALE"
 KEYMAP="$KEYMAP"
 KB_LAYOUT="$KB_LAYOUT"
+KB_VARIANT="$KB_VARIANT"
 HOSTNAME_VAL="$HOSTNAME_VAL"
 CPU_UCODE="$CPU_UCODE"
 REUSE_EXISTING=$REUSE_EXISTING
