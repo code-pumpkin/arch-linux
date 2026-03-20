@@ -342,9 +342,6 @@ handle_existing_disk() {
     menu_labels+=("Shrink an existing partition to make room")
     menu_actions+=("shrink")
 
-    menu_labels+=("Delete specific partitions (pick which ones to remove)")
-    menu_actions+=("delete")
-
     for i in "${!menu_labels[@]}"; do
         echo -e "  ${BOLD}$((i+1)))${NC} ${menu_labels[$i]}"
     done
@@ -395,9 +392,6 @@ handle_existing_disk() {
         shrink)
             shrink_partition
             ;;
-        delete)
-            delete_partitions
-            ;;
     esac
 }
 
@@ -446,6 +440,44 @@ reuse_existing_partition() {
 
     local picked="${candidates[$((root_choice-1))]}"
     local picked_cls="${cand_classes[$((root_choice-1))]}"
+
+    echo ""
+    echo -e "  ${BOLD}1)${NC} Reuse as-is  — Format and install on this partition"
+    echo -e "  ${BOLD}2)${NC} Nuke and rebuild — Delete this partition, create fresh layout"
+    local reuse_action
+    while true; do
+        read -rp "Action [1/2]: " reuse_action
+        case "$reuse_action" in
+            1) break ;;
+            2)
+                warn "Deleting $picked — all data will be lost."
+                confirm "Proceed?" || exit 1
+                swapoff "$picked" 2>/dev/null || true
+                umount "$picked" 2>/dev/null || true
+                # Tear down LUKS/LVM if present
+                if [ "$picked_cls" = "luks" ]; then
+                    local mapper_name
+                    mapper_name=$(lsblk -no NAME "$picked" 2>/dev/null | tail -1)
+                    if [ -e "/dev/mapper/$mapper_name" ]; then
+                        local vg
+                        vg=$(pvs --noheadings -o vg_name "/dev/mapper/$mapper_name" 2>/dev/null | xargs)
+                        [ -n "$vg" ] && vgremove -ff "$vg" 2>/dev/null || true
+                        cryptsetup close "$mapper_name" 2>/dev/null || true
+                    fi
+                fi
+                wipefs -af "$picked" 2>/dev/null || true
+                local partnum
+                partnum=$(echo "$picked" | grep -oP '\d+$')
+                sgdisk -d "$partnum" "$DISK"
+                partprobe "$DISK" 2>/dev/null
+                udevadm settle 2>/dev/null || sleep 2
+                msg "Deleted $picked. Free space available for new partitions."
+                REUSE_EXISTING=false
+                return
+                ;;
+            *) echo "Invalid choice." ;;
+        esac
+    done
 
     if [ "$picked_cls" = "luks" ]; then
         warn "This is a LUKS-encrypted partition."
@@ -582,103 +614,6 @@ shrink_partition() {
             ;;
     esac
     msg "Partition shrunk successfully."
-}
-
-delete_partitions() {
-    header "Delete Specific Partitions"
-
-    local -a parts
-    mapfile -t parts < <(lsblk -lpno NAME,TYPE "$DISK" | awk '$2=="part"{print $1}')
-
-    if [ ${#parts[@]} -eq 0 ]; then
-        info "No partitions found."
-        return
-    fi
-
-    echo "Partitions on $DISK:"
-    for i in "${!parts[@]}"; do
-        local p="${parts[$i]}"
-        local size fstype cls
-        size=$(lsblk -no SIZE "$p" 2>/dev/null | head -1 | xargs)
-        fstype=$(lsblk -no FSTYPE "$p" 2>/dev/null | head -1)
-        cls=$(classify_partition "$p")
-        local color="$NC"
-        case "$cls" in
-            efi) color="$CYAN" ;;
-            windows) color="$RED" ;;
-            linux|luks|swap) color="$GREEN" ;;
-        esac
-        printf "  ${color}${BOLD}%d)${NC} ${color}%-20s %-8s %-14s [%s]${NC}\n" "$((i+1))" "$p" "$size" "${fstype:-(empty)}" "$cls"
-    done
-    echo ""
-    info "Enter partition numbers to delete (e.g., 2 3 5). EFI/Windows partitions will be protected."
-    local del_input
-    read -rp "Delete which partitions? " del_input
-
-    local -a to_delete=()
-    for num in $del_input; do
-        if ! [[ "$num" =~ ^[0-9]+$ ]] || [ "$num" -lt 1 ] || [ "$num" -gt "${#parts[@]}" ]; then
-            warn "Invalid number: $num — skipping."
-            continue
-        fi
-        local p="${parts[$((num-1))]}"
-        local cls
-        cls=$(classify_partition "$p")
-        if [ "$cls" = "efi" ]; then
-            warn "Refusing to delete EFI partition $p — your system won't boot."
-            continue
-        fi
-        if [ "$cls" = "windows" ]; then
-            warn "Refusing to delete Windows partition $p — use Windows tools for that."
-            continue
-        fi
-        to_delete+=("$p")
-    done
-
-    if [ ${#to_delete[@]} -eq 0 ]; then
-        info "Nothing to delete."
-        return
-    fi
-
-    echo ""
-    warn "Will DELETE these partitions (all data lost):"
-    for p in "${to_delete[@]}"; do
-        echo "  - $p"
-    done
-    confirm "Proceed?" || return
-
-    for p in "${to_delete[@]}"; do
-        # Tear down LVM/LUKS if active
-        local fstype
-        fstype=$(lsblk -no FSTYPE "$p" 2>/dev/null | head -1)
-        if [ "$fstype" = "crypto_LUKS" ]; then
-            local mapper_name
-            mapper_name=$(lsblk -no NAME "$p" 2>/dev/null | tail -1)
-            if [ -e "/dev/mapper/$mapper_name" ]; then
-                local vg
-                vg=$(pvs --noheadings -o vg_name "/dev/mapper/$mapper_name" 2>/dev/null | xargs)
-                [ -n "$vg" ] && vgremove -ff "$vg" 2>/dev/null || true
-                cryptsetup close "$mapper_name" 2>/dev/null || true
-            fi
-        fi
-        swapoff "$p" 2>/dev/null || true
-        umount "$p" 2>/dev/null || true
-        wipefs -af "$p" 2>/dev/null || true
-        # Get partition number and delete via sgdisk
-        local partnum
-        partnum=$(echo "$p" | grep -oP '\d+$')
-        sgdisk -d "$partnum" "$DISK"
-        msg "Deleted $p"
-    done
-
-    partprobe "$DISK" 2>/dev/null
-    udevadm settle 2>/dev/null || sleep 2
-    local free_gib
-    free_gib=$(get_free_space_gib "$DISK")
-    msg "Done. Free space now: ~${free_gib} GiB"
-    info "Returning to disk menu so you can use the freed space."
-    echo ""
-    handle_existing_disk
 }
 
 create_partitions() {
