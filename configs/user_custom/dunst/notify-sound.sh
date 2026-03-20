@@ -9,11 +9,10 @@ case "$SUMMARY" in
     CPU*%|MEM*%) exit 0 ;;
 esac
 
-# Check if default output is headphones
-VOL=""
-if pactl get-default-sink 2>/dev/null | grep -qi "headphone"; then
-    VOL="-af volume=0.3"
-fi
+# Play at 30% of current system volume
+CURRENT_VOL=$(pactl get-sink-volume @DEFAULT_SINK@ 2>/dev/null | grep -oP '\d+%' | head -1 | tr -d '%')
+PLAY_VOL=$(( ${CURRENT_VOL:-100} * 30 / 100 ))
+VOL="-af volume=$(awk "BEGIN{printf \"%.2f\", $PLAY_VOL/100}")"
 
 case "$URGENCY" in
     CRITICAL)
