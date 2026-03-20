@@ -31,6 +31,7 @@ SWAP_SIZE=""
 TIMEZONE=""
 LOCALE=""
 KEYMAP="us"
+KB_LAYOUT="us"
 HOSTNAME_VAL=""
 CPU_UCODE=""
 REUSE_EXISTING=false
@@ -986,6 +987,12 @@ gather_config() {
         echo "Invalid choice."
     done
 
+    # X11/Wayland keyboard layout (separate from console keymap)
+    info "X11/Wayland keyboard layout (e.g., us, gb, de, fr, colemak_dh):"
+    read -rp "Layout [us]: " KB_LAYOUT
+    KB_LAYOUT="${KB_LAYOUT:-us}"
+    msg "X11 keyboard layout: $KB_LAYOUT"
+
     # Hostname
     read -rp "Hostname: " HOSTNAME_VAL
     while [ -z "$HOSTNAME_VAL" ]; do
@@ -1585,6 +1592,8 @@ if [ -d /root/wm-configs ]; then
             cp /root/wm-configs/rofi/* "\$cfg/rofi/"
             cp /root/wm-configs/alacritty/* "\$cfg/alacritty/"
             chmod +x "\$cfg/polybar/launch.sh"
+            # Set keyboard layout
+            echo "exec_always --no-startup-id setxkbmap -layout ${KB_LAYOUT}" >> "\$cfg/i3/config"
             ;;
         user_custom)
             mkdir -p "\$cfg/i3" "\$cfg/polybar" "\$cfg/picom" "\$cfg/dunst" "\$cfg/rofi" "\$cfg/kitty" "\$cfg/flameshot" "\$cfg/fastfetch" "\$cfg/scripts" "\$cfg/sounds"
@@ -1613,6 +1622,8 @@ if [ -d /root/wm-configs ]; then
             cp /root/wm-configs/mako/* "\$cfg/mako/"
             cp /root/wm-configs/wofi/* "\$cfg/wofi/"
             cp /root/wm-configs/foot/* "\$cfg/foot/"
+            # Set keyboard layout
+            sed -i 's/xkb_layout us/xkb_layout ${KB_LAYOUT}/' "\$cfg/sway/config"
             ;;
         hyprland)
             mkdir -p "\$cfg/hypr" "\$cfg/waybar" "\$cfg/wofi" "\$cfg/foot"
@@ -1620,6 +1631,8 @@ if [ -d /root/wm-configs ]; then
             cp /root/wm-configs/waybar/* "\$cfg/waybar/"
             cp /root/wm-configs/wofi/* "\$cfg/wofi/"
             cp /root/wm-configs/foot/* "\$cfg/foot/"
+            # Set keyboard layout
+            sed -i 's/kb_layout = us/kb_layout = ${KB_LAYOUT}/' "\$cfg/hypr/hyprland.conf"
             ;;
         kde)
             cp /root/wm-configs/kwinrc "\$cfg/kwinrc" 2>/dev/null || true
@@ -1631,6 +1644,9 @@ if [ -d /root/wm-configs ]; then
     rm -rf /root/wm-configs
     echo "Config templates deployed to \$cfg/"
 fi
+
+# Set X11 keyboard layout system-wide
+localectl set-x11-keymap ${KB_LAYOUT} 2>/dev/null || true
 
 # Enable eGPU service if deployed
 if [ -f /etc/systemd/system/nvidia-egpu.service ]; then
@@ -1917,6 +1933,7 @@ SWAP_SIZE="$SWAP_SIZE"
 TIMEZONE="$TIMEZONE"
 LOCALE="$LOCALE"
 KEYMAP="$KEYMAP"
+KB_LAYOUT="$KB_LAYOUT"
 HOSTNAME_VAL="$HOSTNAME_VAL"
 CPU_UCODE="$CPU_UCODE"
 REUSE_EXISTING=$REUSE_EXISTING
