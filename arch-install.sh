@@ -1026,58 +1026,6 @@ gather_config() {
         echo "Invalid choice."
     done
 
-    # X11/Wayland keyboard layout (separate from console keymap)
-    # X11/Wayland keyboard layout (read from installed system's XKB rules)
-    local xkb_file="/mnt/usr/share/X11/xkb/rules/base.lst"
-    info "X11 keyboard layout — type a search term to filter (e.g., us, fr, de, gb):"
-    while true; do
-        local layout_search
-        read -rp "Search layouts [us]: " layout_search
-        layout_search="${layout_search:-us}"
-        local -a layout_matches
-        mapfile -t layout_matches < <(sed -n '/^! layout/,/^!/p' "$xkb_file" | grep -v '^!' | awk '{print $1}' | grep -i "$layout_search")
-        if [ ${#layout_matches[@]} -eq 0 ]; then
-            warn "No layouts matching '$layout_search'. Try again."
-            continue
-        fi
-        local j=1
-        for lm in "${layout_matches[@]}"; do echo "  $j) $lm"; j=$((j+1)); done
-        if [ ${#layout_matches[@]} -eq 1 ]; then
-            KB_LAYOUT="${layout_matches[0]}"
-            msg "Selected layout: $KB_LAYOUT"
-            break
-        fi
-        local lp
-        read -rp "Pick [1-${#layout_matches[@]}] or 's' to search again: " lp
-        if [ "$lp" = "s" ]; then continue; fi
-        if [[ "$lp" =~ ^[0-9]+$ ]] && [ "$lp" -ge 1 ] && [ "$lp" -le "${#layout_matches[@]}" ]; then
-            KB_LAYOUT="${layout_matches[$((lp-1))]}"
-            msg "Selected layout: $KB_LAYOUT"
-            break
-        fi
-        echo "Invalid choice."
-    done
-
-    # X11/Wayland layout variant (optional)
-    local -a variant_list
-    mapfile -t variant_list < <(sed -n '/^! variant/,/^!/p' "$xkb_file" | grep -v '^!' | grep "^ *[^ ]* *${KB_LAYOUT}:" | awk '{print $1}')
-    if [ ${#variant_list[@]} -gt 0 ]; then
-        info "Available variants for '$KB_LAYOUT' (Enter to skip for default):"
-        local j=1
-        for vm in "${variant_list[@]}"; do echo "  $j) $vm"; j=$((j+1)); done
-        local vp
-        read -rp "Pick variant [1-${#variant_list[@]}] or Enter to skip: " vp
-        if [[ "$vp" =~ ^[0-9]+$ ]] && [ "$vp" -ge 1 ] && [ "$vp" -le "${#variant_list[@]}" ]; then
-            KB_VARIANT="${variant_list[$((vp-1))]}"
-        fi
-    fi
-
-    if [ -n "$KB_VARIANT" ]; then
-        msg "X11 keyboard: $KB_LAYOUT ($KB_VARIANT)"
-    else
-        msg "X11 keyboard: $KB_LAYOUT"
-    fi
-
     # Hostname
     read -rp "Hostname: " HOSTNAME_VAL
     while [ -z "$HOSTNAME_VAL" ]; do
@@ -1484,6 +1432,61 @@ PKGEOF
     chmod +x /mnt/root/pkg-setup.sh
     arch-chroot /mnt /usr/bin/bash /root/pkg-setup.sh
     rm /mnt/root/pkg-setup.sh
+
+    # --- X11/Wayland keyboard layout (XKB packages now installed) ---
+    if [ "$WM_CHOICE" != "none" ]; then
+        local xkb_file="/mnt/usr/share/X11/xkb/rules/base.lst"
+        if [ -f "$xkb_file" ]; then
+            header "Keyboard Layout (GUI)"
+            info "X11 keyboard layout — type a search term to filter (e.g., us, fr, de, gb):"
+            while true; do
+                local layout_search
+                read -rp "Search layouts [us]: " layout_search
+                layout_search="${layout_search:-us}"
+                local -a layout_matches
+                mapfile -t layout_matches < <(sed -n '/^! layout/,/^!/p' "$xkb_file" | grep -v '^!' | awk '{print $1}' | grep -i "$layout_search")
+                if [ ${#layout_matches[@]} -eq 0 ]; then
+                    warn "No layouts matching '$layout_search'. Try again."
+                    continue
+                fi
+                local j=1
+                for lm in "${layout_matches[@]}"; do echo "  $j) $lm"; j=$((j+1)); done
+                if [ ${#layout_matches[@]} -eq 1 ]; then
+                    KB_LAYOUT="${layout_matches[0]}"
+                    msg "Selected layout: $KB_LAYOUT"
+                    break
+                fi
+                local lp
+                read -rp "Pick [1-${#layout_matches[@]}] or 's' to search again: " lp
+                if [ "$lp" = "s" ]; then continue; fi
+                if [[ "$lp" =~ ^[0-9]+$ ]] && [ "$lp" -ge 1 ] && [ "$lp" -le "${#layout_matches[@]}" ]; then
+                    KB_LAYOUT="${layout_matches[$((lp-1))]}"
+                    msg "Selected layout: $KB_LAYOUT"
+                    break
+                fi
+                echo "Invalid choice."
+            done
+
+            local -a variant_list
+            mapfile -t variant_list < <(sed -n '/^! variant/,/^!/p' "$xkb_file" | grep -v '^!' | grep "^ *[^ ]* *${KB_LAYOUT}:" | awk '{print $1}')
+            if [ ${#variant_list[@]} -gt 0 ]; then
+                info "Available variants for '$KB_LAYOUT' (Enter to skip for default):"
+                local j=1
+                for vm in "${variant_list[@]}"; do echo "  $j) $vm"; j=$((j+1)); done
+                local vp
+                read -rp "Pick variant [1-${#variant_list[@]}] or Enter to skip: " vp
+                if [[ "$vp" =~ ^[0-9]+$ ]] && [ "$vp" -ge 1 ] && [ "$vp" -le "${#variant_list[@]}" ]; then
+                    KB_VARIANT="${variant_list[$((vp-1))]}"
+                fi
+            fi
+
+            if [ -n "$KB_VARIANT" ]; then
+                msg "X11 keyboard: $KB_LAYOUT ($KB_VARIANT)"
+            else
+                msg "X11 keyboard: $KB_LAYOUT"
+            fi
+        fi
+    fi
 
     # --- Install bundled custom fonts ---
     if [ -d "$SCRIPT_DIR/fonts" ] && [ -n "$(ls -A "$SCRIPT_DIR/fonts/" 2>/dev/null)" ]; then
