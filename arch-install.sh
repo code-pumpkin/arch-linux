@@ -989,12 +989,49 @@ gather_config() {
     done
 
     # X11/Wayland keyboard layout (separate from console keymap)
-    info "X11/Wayland keyboard layout (e.g., us, gb, de, fr):"
-    read -rp "Layout [us]: " KB_LAYOUT
-    KB_LAYOUT="${KB_LAYOUT:-us}"
-    info "X11/Wayland layout variant (e.g., colemak_dh, dvorak, intl — leave empty for default):"
-    read -rp "Variant []: " KB_VARIANT
-    KB_VARIANT="${KB_VARIANT:-}"
+    info "X11 keyboard layout — type a search term to filter (e.g., us, fr, de, gb):"
+    while true; do
+        local layout_search
+        read -rp "Search layouts [us]: " layout_search
+        layout_search="${layout_search:-us}"
+        local -a layout_matches
+        mapfile -t layout_matches < <(localectl list-x11-keymap-layouts 2>/dev/null | grep -i "$layout_search")
+        if [ ${#layout_matches[@]} -eq 0 ]; then
+            warn "No layouts matching '$layout_search'. Try again."
+            continue
+        fi
+        local j=1
+        for lm in "${layout_matches[@]}"; do echo "  $j) $lm"; j=$((j+1)); done
+        if [ ${#layout_matches[@]} -eq 1 ]; then
+            KB_LAYOUT="${layout_matches[0]}"
+            msg "Selected layout: $KB_LAYOUT"
+            break
+        fi
+        local lp
+        read -rp "Pick [1-${#layout_matches[@]}] or 's' to search again: " lp
+        if [ "$lp" = "s" ]; then continue; fi
+        if [[ "$lp" =~ ^[0-9]+$ ]] && [ "$lp" -ge 1 ] && [ "$lp" -le "${#layout_matches[@]}" ]; then
+            KB_LAYOUT="${layout_matches[$((lp-1))]}"
+            msg "Selected layout: $KB_LAYOUT"
+            break
+        fi
+        echo "Invalid choice."
+    done
+
+    # X11/Wayland layout variant (optional)
+    local -a variant_list
+    mapfile -t variant_list < <(localectl list-x11-keymap-variants "$KB_LAYOUT" 2>/dev/null)
+    if [ ${#variant_list[@]} -gt 0 ]; then
+        info "Available variants for '$KB_LAYOUT' (Enter to skip for default QWERTY):"
+        local j=1
+        for vm in "${variant_list[@]}"; do echo "  $j) $vm"; j=$((j+1)); done
+        local vp
+        read -rp "Pick variant [1-${#variant_list[@]}] or Enter to skip: " vp
+        if [[ "$vp" =~ ^[0-9]+$ ]] && [ "$vp" -ge 1 ] && [ "$vp" -le "${#variant_list[@]}" ]; then
+            KB_VARIANT="${variant_list[$((vp-1))]}"
+        fi
+    fi
+
     if [ -n "$KB_VARIANT" ]; then
         msg "X11 keyboard: $KB_LAYOUT ($KB_VARIANT)"
     else
