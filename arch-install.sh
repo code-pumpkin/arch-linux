@@ -1978,6 +1978,7 @@ if [ "${WM_CHOICE}" = "user_custom" ]; then
     # Deploy .zshrc and .p10k.zsh
     cp /root/wm-configs/zshrc /home/${username}/.zshrc 2>/dev/null || true
     cp /root/wm-configs/p10k.zsh /home/${username}/.p10k.zsh 2>/dev/null || true
+    cp /root/wm-configs/Xresources /home/${username}/.Xresources 2>/dev/null || true
     # Deploy post-install.sh
     cp /root/wm-configs/post-install.sh /home/${username}/post-install.sh 2>/dev/null || true
     chmod +x /home/${username}/post-install.sh 2>/dev/null || true

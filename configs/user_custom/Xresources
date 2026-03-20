@@ -1,0 +1,10 @@
+! DPI settings for high resolution display
+Xft.dpi: 96
+Xft.antialias: true
+Xft.hinting: true
+Xft.hintstyle: hintslight
+Xft.rgba: rgb
+
+! Terminal font settings
+*font: monospace-10
+*boldFont: monospace-10:bold
