@@ -1,8 +1,7 @@
 #!/bin/bash
-# Save as vpn-control.sh
-
+VPN_DIR="$HOME/vpn"
 DEBUG_LOG="/tmp/vpn-debug.log"
-DAEMON_SCRIPT="/home/hafeezh/scripts/polybar/vpnConnect.exp"
+CONNECT_SCRIPT="$HOME/.config/polybar/vpnConnect.exp"
 
 debug() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') $1" >> "$DEBUG_LOG"
@@ -11,13 +10,39 @@ debug() {
 check_vpn() {
     if pgrep -x "openvpn" > /dev/null; then
         echo "vpn ON"
-        debug "VPN is running"
         return 0
     else
         echo "vpn OFF"
-        debug "VPN is not running"
         return 1
     fi
+}
+
+start_vpn() {
+    # List .ovpn files in ~/vpn/
+    local profiles
+    profiles=$(find "$VPN_DIR" -maxdepth 1 -name '*.ovpn' -printf '%f\n' 2>/dev/null | sort)
+
+    if [ -z "$profiles" ]; then
+        notify-send "VPN" "No .ovpn profiles found in $VPN_DIR" -u critical
+        return 1
+    fi
+
+    local count
+    count=$(echo "$profiles" | wc -l)
+
+    local selected
+    if [ "$count" -eq 1 ]; then
+        selected="$profiles"
+    else
+        selected=$(echo "$profiles" | rofi -dmenu -i -p "VPN Profile:" 2>/dev/null)
+    fi
+
+    [ -z "$selected" ] && return 1
+
+    debug "Starting VPN with $selected"
+    nohup expect "$CONNECT_SCRIPT" "$VPN_DIR/$selected" >/dev/null 2>&1 &
+    sleep 2
+    check_vpn
 }
 
 case "$1" in
@@ -27,13 +52,10 @@ case "$1" in
     *)
         if check_vpn; then
             debug "Stopping VPN..."
-            killall openvpn
+            sudo killall openvpn 2>/dev/null
             echo "VPN OFF"
         else
-            debug "Starting VPN..."
-            nohup expect $DAEMON_SCRIPT >/dev/null 2>&1 &
-            sleep 2
-            check_vpn
+            start_vpn
         fi
         ;;
 esac

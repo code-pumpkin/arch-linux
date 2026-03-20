@@ -36,6 +36,12 @@ sleep 1
 for i in $(seq 1 15); do
     if lspci | grep -qi "nvidia"; then
         modprobe nvidia nvidia_drm nvidia_modeset nvidia_uvm
+        # Update xorg.conf with detected NVIDIA PCI BusID
+        NVIDIA_PCI=$(lspci | grep -i 'nvidia' | head -1 | cut -d' ' -f1)
+        if [ -n "$NVIDIA_PCI" ] && [ -f /etc/X11/xorg.conf ]; then
+            NVIDIA_BUSID="PCI:$(echo "$NVIDIA_PCI" | awk -F'[:.]' '{printf "%d:%d:%d", $1, $2, $3}')"
+            sed -i "s|__NVIDIA_BUSID__|$NVIDIA_BUSID|g" /etc/X11/xorg.conf
+        fi
         echo "NVIDIA eGPU detected and drivers loaded"
         exit 0
     fi

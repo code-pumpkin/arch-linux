@@ -1767,7 +1767,7 @@ if [ -d /root/wm-configs ]; then
             fi
             ;;
         user_custom)
-            mkdir -p "\$cfg/i3" "\$cfg/polybar" "\$cfg/picom" "\$cfg/dunst" "\$cfg/rofi" "\$cfg/kitty" "\$cfg/flameshot" "\$cfg/fastfetch" "\$cfg/scripts" "\$cfg/sounds"
+            mkdir -p "\$cfg/i3" "\$cfg/polybar" "\$cfg/picom" "\$cfg/dunst" "\$cfg/rofi" "\$cfg/kitty" "\$cfg/flameshot" "\$cfg/fastfetch" "\$cfg/scripts" "\$cfg/sounds" "\$home/vpn"
             cp /root/wm-configs/i3/* "\$cfg/i3/"
             cp /root/wm-configs/polybar/* "\$cfg/polybar/"
             cp /root/wm-configs/picom/* "\$cfg/picom/"
@@ -1778,16 +1778,24 @@ if [ -d /root/wm-configs ]; then
             cp /root/wm-configs/fastfetch/* "\$cfg/fastfetch/"
             cp /root/wm-configs/scripts/* "\$cfg/scripts/"
             cp /root/wm-configs/sounds/* "\$cfg/sounds/"
+            cp /root/wm-configs/vpn/README.md "\$home/vpn/" 2>/dev/null || true
             chmod +x "\$cfg/polybar/"*.sh "\$cfg/dunst/"*.sh "\$cfg/scripts/"*
+            # Substitute __HOME__ placeholder in configs
+            sed -i "s|__HOME__|\\$home|g" "\$cfg/flameshot/flameshot.ini"
             # Deploy screenlayout
             if [ -d /root/wm-configs/screenlayout ]; then
                 mkdir -p "\$home/.screenlayout"
                 cp /root/wm-configs/screenlayout/* "\$home/.screenlayout/"
                 chmod +x "\$home/.screenlayout/"*.sh
             fi
-            # Deploy xorg.conf
+            # Deploy xorg.conf — substitute Intel BusID at install time
             if [ -f /root/wm-configs/xorg.conf ]; then
                 cp /root/wm-configs/xorg.conf /etc/X11/xorg.conf
+                INTEL_PCI=\$(lspci | grep -i 'vga.*intel' | head -1 | cut -d' ' -f1)
+                if [ -n "\$INTEL_PCI" ]; then
+                    INTEL_BUSID="PCI:\$(echo "\$INTEL_PCI" | awk -F'[:.]' '{printf "%d:%d:%d", \$1, \$2, \$3}')"
+                    sed -i "s|__INTEL_BUSID__|\$INTEL_BUSID|g" /etc/X11/xorg.conf
+                fi
             fi
             ;;
         sway)
