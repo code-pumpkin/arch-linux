@@ -1438,11 +1438,11 @@ install_packages() {
             ;;
         sway)
             wm_pkgs="sway swaylock swayidle waybar mako wofi foot grim slurp ly"
-            wm_pkgs="$wm_pkgs xorg-xwayland"
+            wm_pkgs="$wm_pkgs xorg-xwayland xdg-desktop-portal-wlr"
             ;;
         hyprland)
             wm_pkgs="hyprland waybar mako wofi foot grim slurp ly"
-            wm_pkgs="$wm_pkgs xorg-xwayland"
+            wm_pkgs="$wm_pkgs xorg-xwayland xdg-desktop-portal-hyprland"
             ;;
         kde)
             wm_pkgs="plasma-meta kde-applications-meta sddm"
