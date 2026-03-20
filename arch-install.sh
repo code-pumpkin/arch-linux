@@ -1425,7 +1425,7 @@ install_packages() {
     local wm_pkgs=""
     case "$WM_CHOICE" in
         i3)
-            wm_pkgs="i3-wm i3status i3lock polybar dunst rofi picom feh alacritty flameshot"
+            wm_pkgs="i3-wm i3status i3lock polybar dunst rofi picom feh alacritty flameshot ly"
             wm_pkgs="$wm_pkgs xorg-server xorg-xinit xorg-xrandr xorg-xsetroot dex"
             wm_pkgs="$wm_pkgs network-manager-applet xss-lock"
             ;;
@@ -1435,11 +1435,11 @@ install_packages() {
             wm_pkgs="$wm_pkgs network-manager-applet xss-lock lm_sensors openvpn expect"
             ;;
         sway)
-            wm_pkgs="sway swaylock swayidle waybar mako wofi foot grim slurp"
+            wm_pkgs="sway swaylock swayidle waybar mako wofi foot grim slurp ly"
             wm_pkgs="$wm_pkgs xorg-xwayland"
             ;;
         hyprland)
-            wm_pkgs="hyprland waybar mako wofi foot grim slurp"
+            wm_pkgs="hyprland waybar mako wofi foot grim slurp ly"
             wm_pkgs="$wm_pkgs xorg-xwayland"
             ;;
         kde)
@@ -1462,6 +1462,13 @@ PKGEOF
     if [ "$WM_CHOICE" = "kde" ]; then
         echo 'systemctl enable sddm' >> /mnt/root/pkg-setup.sh
     fi
+
+    # i3/sway/hyprland use ly display manager
+    case "$WM_CHOICE" in
+        i3|sway|hyprland)
+            echo 'systemctl enable ly' >> /mnt/root/pkg-setup.sh
+            ;;
+    esac
 
     echo 'echo "Packages installed and services enabled."' >> /mnt/root/pkg-setup.sh
 
@@ -1673,9 +1680,10 @@ setup_user_and_rice() {
     # Build session hint
     local session_hint=""
     case "$WM_CHOICE" in
-        i3|user_custom) session_hint="Log in and type 'startx' to launch i3." ;;
-        sway)           session_hint="Log in and type 'sway' to launch Sway." ;;
-        hyprland)       session_hint="Log in and type 'Hyprland' to launch Hyprland." ;;
+        i3)             session_hint="i3 starts via ly display manager." ;;
+        user_custom)    session_hint="Log in and type 'startx' to launch i3." ;;
+        sway)           session_hint="Sway starts via ly display manager." ;;
+        hyprland)       session_hint="Hyprland starts via ly display manager." ;;
         kde)            session_hint="KDE starts automatically via SDDM." ;;
         none)           session_hint="No graphical environment installed." ;;
     esac
