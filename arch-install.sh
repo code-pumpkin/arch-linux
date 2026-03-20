@@ -1027,42 +1027,41 @@ gather_config() {
     done
 
     # X11/Wayland keyboard layout (separate from console keymap)
-    # X11/Wayland keyboard layout
-    local -a all_layouts=(us gb de fr es it pt br ru pl nl se no dk fi ch at be hu cz sk ro bg hr si lt lv ee tr gr il ara ir in jp kr th vn cn tw)
-    info "X11 keyboard layout:"
-    local j=1
-    for lm in "${all_layouts[@]}"; do printf "  %2d) %s" "$j" "$lm"; [ $((j % 8)) -eq 0 ] && echo ""; j=$((j+1)); done
-    echo ""
-    echo ""
-    local lp
+    # X11/Wayland keyboard layout (read from installed system's XKB rules)
+    local xkb_file="/mnt/usr/share/X11/xkb/rules/base.lst"
+    info "X11 keyboard layout — type a search term to filter (e.g., us, fr, de, gb):"
     while true; do
-        read -rp "Pick layout [1-${#all_layouts[@]}] or type a layout name [us]: " lp
-        lp="${lp:-1}"
-        if [[ "$lp" =~ ^[0-9]+$ ]] && [ "$lp" -ge 1 ] && [ "$lp" -le "${#all_layouts[@]}" ]; then
-            KB_LAYOUT="${all_layouts[$((lp-1))]}"
+        local layout_search
+        read -rp "Search layouts [us]: " layout_search
+        layout_search="${layout_search:-us}"
+        local -a layout_matches
+        mapfile -t layout_matches < <(sed -n '/^! layout/,/^!/p' "$xkb_file" | grep -v '^!' | awk '{print $1}' | grep -i "$layout_search")
+        if [ ${#layout_matches[@]} -eq 0 ]; then
+            warn "No layouts matching '$layout_search'. Try again."
+            continue
+        fi
+        local j=1
+        for lm in "${layout_matches[@]}"; do echo "  $j) $lm"; j=$((j+1)); done
+        if [ ${#layout_matches[@]} -eq 1 ]; then
+            KB_LAYOUT="${layout_matches[0]}"
+            msg "Selected layout: $KB_LAYOUT"
             break
-        elif [[ "$lp" =~ ^[a-z]+$ ]]; then
-            KB_LAYOUT="$lp"
+        fi
+        local lp
+        read -rp "Pick [1-${#layout_matches[@]}] or 's' to search again: " lp
+        if [ "$lp" = "s" ]; then continue; fi
+        if [[ "$lp" =~ ^[0-9]+$ ]] && [ "$lp" -ge 1 ] && [ "$lp" -le "${#layout_matches[@]}" ]; then
+            KB_LAYOUT="${layout_matches[$((lp-1))]}"
+            msg "Selected layout: $KB_LAYOUT"
             break
         fi
         echo "Invalid choice."
     done
-    msg "Selected layout: $KB_LAYOUT"
 
-    # Variants — common ones per layout
-    declare -A common_variants=(
-        [us]="colemak colemak_dh colemak_dh_wide dvorak dvorak-intl intl altgr-intl mac euro"
-        [gb]="extd intl mac colemak colemak_dh dvorak"
-        [de]="nodeadkeys mac neo dvorak"
-        [fr]="azerty mac oss bepo dvorak"
-        [es]="nodeadkeys mac dvorak"
-        [it]="nodeadkeys mac"
-        [pt]="nodeadkeys mac"
-        [br]="nodeadkeys dvorak"
-    )
-    local variants_str="${common_variants[$KB_LAYOUT]:-}"
-    if [ -n "$variants_str" ]; then
-        local -a variant_list=($variants_str)
+    # X11/Wayland layout variant (optional)
+    local -a variant_list
+    mapfile -t variant_list < <(sed -n '/^! variant/,/^!/p' "$xkb_file" | grep -v '^!' | grep "^ *[^ ]* *${KB_LAYOUT}:" | awk '{print $1}')
+    if [ ${#variant_list[@]} -gt 0 ]; then
         info "Available variants for '$KB_LAYOUT' (Enter to skip for default):"
         local j=1
         for vm in "${variant_list[@]}"; do echo "  $j) $vm"; j=$((j+1)); done
@@ -1071,9 +1070,6 @@ gather_config() {
         if [[ "$vp" =~ ^[0-9]+$ ]] && [ "$vp" -ge 1 ] && [ "$vp" -le "${#variant_list[@]}" ]; then
             KB_VARIANT="${variant_list[$((vp-1))]}"
         fi
-    else
-        info "No common variants for '$KB_LAYOUT'. Enter one manually or press Enter to skip:"
-        read -rp "Variant []: " KB_VARIANT
     fi
 
     if [ -n "$KB_VARIANT" ]; then
