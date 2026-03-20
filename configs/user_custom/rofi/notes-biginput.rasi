@@ -1,0 +1,11 @@
+@theme "~/.config/rofi/notes.rasi"
+
+/* Bigger window only for the multiline content prompt */
+window {
+  width: 720px;
+  padding: 16px;
+}
+
+listview {
+  lines: 18;
+}

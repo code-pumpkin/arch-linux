@@ -1,0 +1,10 @@
+configuration {
+    show-icons:     true;
+    icon-theme:     "Papirus";
+    font:           "monospace 12";
+    display-drun:   "Apps";
+    display-window: "Windows";
+    drun-display-format: "{name}";
+}
+
+@theme "~/.config/rofi/theme.rasi"

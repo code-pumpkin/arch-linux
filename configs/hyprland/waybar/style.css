@@ -1,0 +1,5 @@
+* { font-family: DejaVu Sans; font-size: 13px; }
+window#waybar { background: #2e3440; color: #d8dee9; }
+#workspaces button { padding: 0 8px; color: #d8dee9; }
+#workspaces button.active { background: #5e81ac; color: #eceff4; border-radius: 4px; }
+#clock, #pulseaudio, #battery { padding: 0 10px; }

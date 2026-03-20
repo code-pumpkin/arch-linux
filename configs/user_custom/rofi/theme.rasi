@@ -1,0 +1,84 @@
+* {
+    bg:             #282A2EE6;
+    bg-alt:         #373B41;
+    fg:             #C5C8C6;
+    primary:        #F0C674;
+    secondary:      #8ABEB7;
+    alert:          #A54242;
+    disabled:       #707880;
+
+    background-color:   transparent;
+    text-color:         @fg;
+    margin:             0;
+    padding:            0;
+    spacing:            0;
+}
+
+window {
+    location:           center;
+    width:              480;
+    border:             2px;
+    border-color:       @primary;
+    border-radius:      8px;
+    background-color:   @bg;
+}
+
+mainbox {
+    children:           [ inputbar, listview ];
+    spacing:            8px;
+    padding:            16px;
+}
+
+inputbar {
+    children:           [ prompt, entry ];
+    spacing:            8px;
+    padding:            10px 12px;
+    background-color:   @bg-alt;
+    border-radius:      6px;
+}
+
+prompt {
+    text-color:         @primary;
+}
+
+entry {
+    placeholder:        "Search...";
+    placeholder-color:  @disabled;
+}
+
+listview {
+    lines:              8;
+    columns:            1;
+    fixed-height:       false;
+    spacing:            4px;
+}
+
+element {
+    padding:            8px 12px;
+    border-radius:      4px;
+}
+
+element normal.normal {
+    text-color:         @fg;
+}
+
+element selected.normal {
+    background-color:   @bg-alt;
+    text-color:         @primary;
+    border:             0 0 0 3px;
+    border-color:       @primary;
+}
+
+element alternate.normal {
+    text-color:         @fg;
+}
+
+element-text {
+    text-color:         inherit;
+    highlight:          bold underline;
+}
+
+element-icon {
+    size:               24px;
+    padding:            0 8px 0 0;
+}

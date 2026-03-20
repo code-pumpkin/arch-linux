@@ -1,0 +1,93 @@
+/* Notes theme: centered, compact, fully explicit colors (no random white) */
+* {
+  bg:        #0f111a;
+  panel:     #171a2a;
+  sel:       #242a44;
+
+  fg:        #a6adc8;   /* soft */
+  fg2:       #bac2de;   /* slightly stronger, still not white */
+  accent:    #7aa2f7;
+}
+
+configuration {
+  font: "FreeMono 14";
+}
+
+window {
+  location: center;
+  anchor: center;
+  width: 420px;
+
+  background-color: @bg;
+  text-color: @fg;
+
+  border: 2px;
+  border-color: @sel;
+  border-radius: 14px;
+  padding: 14px;
+}
+
+mainbox {
+  spacing: 10px;
+  background-color: transparent;
+  text-color: @fg;
+}
+
+inputbar {
+  background-color: @panel;
+  text-color: @fg2;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+prompt { text-color: @accent; }
+entry  { text-color: @fg2; background-color: transparent; }
+
+message {
+  background-color: @panel;
+  text-color: @fg;
+  border-radius: 12px;
+  padding: 8px;
+}
+
+textbox {
+  text-color: @fg;
+  background-color: transparent;
+}
+
+listview {
+  lines: 10;
+  fixed-height: false;
+  dynamic: true;
+  spacing: 6px;
+
+  background-color: transparent;
+  text-color: @fg;
+
+  scrollbar: true;
+}
+
+scrollbar {
+  width: 8px;
+  background-color: transparent;
+  handle-color: @sel;
+  handle-width: 8px;
+  border-radius: 8px;
+}
+
+element {
+  padding: 8px;
+  border-radius: 10px;
+  background-color: transparent;
+  text-color: @fg;
+}
+
+element selected {
+  background-color: @sel;
+  text-color: @fg2;
+}
+
+element-text {
+  background-color: transparent;
+  text-color: inherit;
+}

@@ -1,0 +1,11 @@
+width=400
+prompt=Apps
+allow_images=true
+image_size=24
+colors=true
+
+color=#d8dee9
+background-color=#2e3440
+border-color=#5e81ac
+border-width=2
+border-radius=8

@@ -1,0 +1,19 @@
+configuration {
+    show-icons: true;
+    display-drun: "Apps";
+    drun-display-format: "{name}";
+}
+
+* {
+    bg: #2e3440;
+    fg: #d8dee9;
+    accent: #5e81ac;
+    background-color: @bg;
+    text-color: @fg;
+}
+
+window { width: 400px; border-radius: 8px; border: 2px solid @accent; }
+inputbar { padding: 8px; }
+listbox { padding: 4px; }
+element { padding: 6px 8px; }
+element selected { background-color: @accent; text-color: #eceff4; border-radius: 4px; }

@@ -1,0 +1,28 @@
+* {
+    font: "JetBrains Mono 12";
+    background: #282A2EAA;
+    foreground: #C5C8C6;
+    selected:   #F0C67440;
+}
+
+window {
+    width:     300px;
+    location:  center;
+    border:    2px;
+    border-radius: 8px;
+    background-color: @background;
+}
+
+listview {
+    columns: 1;
+    lines: 4;
+}
+
+element {
+    padding: 8px 12px;
+}
+
+element selected {
+    background-color: @selected;
+}
+

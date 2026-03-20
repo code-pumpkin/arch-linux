@@ -1,0 +1,12 @@
+default-timeout=10000
+border-radius=6
+border-size=2
+border-color=#5e81ac
+background-color=#2e3440
+text-color=#d8dee9
+font=DejaVu Sans 10
+
+[urgency=critical]
+background-color=#bf616a
+text-color=#eceff4
+default-timeout=0

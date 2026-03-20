@@ -1,0 +1,48 @@
+#!/usr/bin/expect -f
+set VPN_CONFIG "/home/hafeezh/scripts/polybar/pumpkinYoga.ovpn"
+set DEBUG_LOG "/tmp/vpn-debug.log"
+
+# Use zenity to prompt for the password with a masked input
+set PASSWORD [exec zenity --title=VPN --password --text="🔒 Please enter your private key password for VPN connection:"]
+
+proc debug {msg} {
+    set logFile [open $::DEBUG_LOG "a"]
+    puts $logFile "[clock format [clock seconds] -format {%Y-%m-%d %H:%M:%S}] $msg"
+    close $logFile
+}
+
+debug "Starting VPN daemon with sudo..."
+exec notify-send "VPN" "Starting OpenVPN daemon..."
+
+# Start OpenVPN with sudo (no password required due to sudoers config)
+spawn sudo openvpn --config $VPN_CONFIG
+
+# Wait for password prompt
+expect "Enter Private Key Password:"
+send "$PASSWORD\r"
+
+# Wait for connection confirmation
+expect {
+    "Initialization Sequence Completed" {
+        exec notify-send "VPN" "Connection established successfully"
+        debug "Connection established successfully"
+        
+        # Disable IPv6 to prevent leaks
+        exec sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1
+        exec sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1
+        exec notify-send "VPN" "IPv6 disabled to prevent leaks"
+        debug "IPv6 disabled to prevent leaks"
+    }
+    timeout {
+        exec notify-send "VPN" "Connection attempt timed out"
+        debug "Connection attempt timed out"
+        exit 1
+    }
+    eof {
+        exec notify-send "VPN" "Connection failed"
+        debug "Connection failed"
+        exit 1
+    }
+}
+
+interact

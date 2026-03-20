@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# Simple lock screen
+i3lock -c 000000

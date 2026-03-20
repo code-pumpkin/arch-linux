@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# Start X with the correct monitor layout
+~/.screenlayout/layout1.sh
+
+echo "Layout applied successfully"
+

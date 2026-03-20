@@ -1,0 +1,14 @@
+# KDE Plasma — minimal config for Windows-like experience
+# Most settings are managed through KDE's System Settings GUI.
+# This file just sets sensible defaults for a Windows-switcher.
+
+[Desktops]
+Number=4
+Rows=1
+
+[Windows]
+FocusPolicy=ClickToFocus
+
+[org.kde.kdecoration2]
+ButtonsOnLeft=
+ButtonsOnRight=IAX
