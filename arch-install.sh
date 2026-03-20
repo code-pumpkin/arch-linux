@@ -903,7 +903,7 @@ install_base() {
         # Only back up files if they point to a DIFFERENT root (not ours)
         local backup_dir="/mnt/root/boot-backup-$(date +%Y%m%d%H%M%S)"
         local backed_up=false
-        for f in /mnt/boot/vmlinuz-linux /mnt/boot/initramfs-linux.img /mnt/boot/initramfs-linux-fallback.img; do
+        for f in /mnt/boot/vmlinuz-linux /mnt/boot/initramfs-linux.img /mnt/boot/initramfs-linux-fallback.img /mnt/boot/intel-ucode.img /mnt/boot/amd-ucode.img; do
             if [ -e "$f" ]; then
                 mkdir -p "$backup_dir"
                 mv "$f" "$backup_dir/"
