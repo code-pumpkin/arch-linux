@@ -1838,7 +1838,9 @@ if [ -f /etc/systemd/system/nvidia-egpu.service ]; then
     echo "eGPU auto-setup service enabled."
     # Install NVIDIA driver based on GPU generation
     if [ "${EGPU_NVIDIA}" != "470xx" ]; then
-        pacman -S --noconfirm --needed nvidia-dkms nvidia-utils nvidia-settings
+        pacman -S --noconfirm --needed nvidia-dkms nvidia-utils nvidia-settings || {
+            echo "NOTE: DKMS module build failed in chroot (expected). It will build on first boot."
+        }
     fi
 fi
 
@@ -1921,7 +1923,9 @@ fi
 # Install nvidia-470xx via AUR if eGPU needs legacy driver
 if [ "${EGPU_NVIDIA}" = "470xx" ]; then
     if command -v ${AUR_HELPER} &>/dev/null; then
-        sudo -u ${username} ${AUR_HELPER} -S --noconfirm nvidia-470xx-dkms nvidia-470xx-utils opencl-nvidia-470xx
+        sudo -u ${username} ${AUR_HELPER} -S --noconfirm nvidia-470xx-dkms nvidia-470xx-utils opencl-nvidia-470xx || {
+            echo "NOTE: DKMS module build failed in chroot (expected). It will build on first boot."
+        }
     else
         echo "ERROR: AUR helper not available. Install nvidia-470xx-dkms manually after reboot:"
         echo "  ${AUR_HELPER} -S nvidia-470xx-dkms nvidia-470xx-utils opencl-nvidia-470xx"
