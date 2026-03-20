@@ -1760,6 +1760,10 @@ if [ -d /root/wm-configs ]; then
                 cp /root/wm-configs/screenlayout/* "\$home/.screenlayout/"
                 chmod +x "\$home/.screenlayout/"*.sh
             fi
+            # Deploy xorg.conf
+            if [ -f /root/wm-configs/xorg.conf ]; then
+                cp /root/wm-configs/xorg.conf /etc/X11/xorg.conf
+            fi
             ;;
         sway)
             mkdir -p "\$cfg/sway" "\$cfg/waybar" "\$cfg/mako" "\$cfg/wofi" "\$cfg/foot"
@@ -1806,9 +1810,10 @@ Section "InputClass"
     Identifier "system-keyboard"
     MatchIsKeyboard "on"
     Option "XkbLayout" "${KB_LAYOUT}"
+EndSection
 KBEOF
 if [ -n "${KB_VARIANT}" ]; then
-    sed -i '/XkbLayout/a\\    Option "XkbVariant" "${KB_VARIANT}"' /etc/X11/xorg.conf.d/00-keyboard.conf
+    sed -i '/EndSection/i\\    Option "XkbVariant" "${KB_VARIANT}"' /etc/X11/xorg.conf.d/00-keyboard.conf
 fi
 fi
 
@@ -1878,6 +1883,11 @@ if [ -n "${BROWSER_PKG}" ]; then
             fi
             ;;
     esac
+fi
+
+# Enable pipewire user services
+if [ "${WM_CHOICE}" != "none" ]; then
+    sudo -u ${username} systemctl --user enable pipewire.service pipewire-pulse.service wireplumber.service 2>/dev/null || true
 fi
 
 echo "User ${username} created. ${session_hint}"
