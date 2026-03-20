@@ -1,5 +1,5 @@
 #!/bin/bash
-VPN_DIR="$HOME/vpn"
+VPN_DIR="${VPN_DIR:-$HOME/vpn}"
 DEBUG_LOG="/tmp/vpn-debug.log"
 CONNECT_SCRIPT="$HOME/.config/polybar/vpnConnect.exp"
 

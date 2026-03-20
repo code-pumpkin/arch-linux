@@ -1435,6 +1435,7 @@ install_packages() {
             wm_pkgs="$wm_pkgs xorg-server xorg-xinit xorg-xrandr xorg-xsetroot dex"
             wm_pkgs="$wm_pkgs network-manager-applet xss-lock lm_sensors openvpn expect"
             wm_pkgs="$wm_pkgs input-leap otf-font-awesome ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-common nvidia-prime dkms linux-headers bolt"
+            wm_pkgs="$wm_pkgs zsh zathura zathura-pdf-mupdf zenity"
             ;;
         sway)
             wm_pkgs="sway swaylock swayidle waybar mako wofi foot grim slurp ly"
@@ -1953,6 +1954,27 @@ fi
 # Enable pipewire user services
 if [ "${WM_CHOICE}" != "none" ]; then
     sudo -u ${username} systemctl --user enable pipewire.service pipewire-pulse.service wireplumber.service 2>/dev/null || true
+fi
+
+# user_custom: install oh-my-zsh, powerlevel10k, set zsh as default shell
+if [ "${WM_CHOICE}" = "user_custom" ]; then
+    chsh -s /usr/bin/zsh ${username}
+    # Install oh-my-zsh (unattended)
+    sudo -u ${username} sh -c 'RUNZSH=no KEEP_ZSHRC=yes sh -c "\$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"' || {
+        echo "NOTE: oh-my-zsh install had warnings (check above)."
+    }
+    # Install powerlevel10k
+    sudo -u ${username} git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /home/${username}/.oh-my-zsh/custom/themes/powerlevel10k 2>/dev/null || {
+        echo "NOTE: powerlevel10k clone had warnings."
+    }
+    # Deploy .zshrc and .p10k.zsh
+    cp /root/wm-configs/zshrc /home/${username}/.zshrc 2>/dev/null || true
+    cp /root/wm-configs/p10k.zsh /home/${username}/.p10k.zsh 2>/dev/null || true
+    # Deploy post-install.sh
+    cp /root/wm-configs/post-install.sh /home/${username}/post-install.sh 2>/dev/null || true
+    chmod +x /home/${username}/post-install.sh 2>/dev/null || true
+    chown -R ${username}:${username} /home/${username}/.zshrc /home/${username}/.p10k.zsh /home/${username}/.oh-my-zsh /home/${username}/post-install.sh 2>/dev/null || true
+    echo "zsh + oh-my-zsh + powerlevel10k installed."
 fi
 
 echo "User ${username} created. ${session_hint}"

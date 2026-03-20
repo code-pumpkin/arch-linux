@@ -28,21 +28,6 @@ exec_always --no-startup-id picom --config ~/.config/picom/picom.conf
 
 
 # Desktop - no eDP scaling needed
-# exec_always --no-startup-id xrandr --output eDP-1 --scale 0.6x0.6
-
-# Fix keyboard layout (remove Alt+Shift toggle that conflicts with i3 keybindings)
-exec_always --no-startup-id setxkbmap -layout colemak_dh -option ""
-
-
-bindsym $mod+Shift+t exec ~/.config/scripts/tasks/scripts/tasks
-
-exec --no-startup-id ~/.config/scripts/check-reminders
-
-
-# The combination of xss-lock, nm-applet and pactl is a popular choice, so
-# they are included here as an example. Modify as you see fit.
-
-# xss-lock grabs a logind suspend inhibit lock and will use i3lock to lock the
 # screen before suspend. Use loginctl lock-session to lock your screen.
 exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock -c 000000 --nofork
 
@@ -79,11 +64,6 @@ bindsym $mod+b exec --no-startup-id firefox
 
 # Power menu
 bindsym $mod+Shift+p exec --no-startup-id ~/.config/polybar/power-menu.sh
-
-
-#bindsym $mod+n exec --no-startup-id ~/configuration/scripts/notes
-
-bindsym $mod+n exec --no-startup-id env TERMINAL=kitty ~/.config/scripts/notes
 
 
 # Use Mouse+$mod to drag floating windows to their wanted position
@@ -255,7 +235,3 @@ exec --no-startup-id ~/.config/scripts/system-monitor.sh
 
 # Nerd-dictation toggle
 bindsym Mod4+Shift+s exec --no-startup-id ~/.config/scripts/nerd-dictation-toggle.sh
-
-# AI Chat overlay
-for_window [class="chat-rofi"] floating enable, resize set 680 420, move position center
-bindsym $mod+Shift+a exec --no-startup-id ~/chat/bin/chat-tui --rofi

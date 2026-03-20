@@ -1,0 +1,26 @@
+# Enable Powerlevel10k instant prompt (keep near top)
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+export ZSH="$HOME/.oh-my-zsh"
+plugins=(git)
+source $ZSH/oh-my-zsh.sh
+
+# Powerlevel10k
+source $ZSH/custom/themes/powerlevel10k/powerlevel10k.zsh-theme
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# PATH
+export PATH="$HOME/.config/scripts:$HOME/.local/bin:$PATH"
+
+# VPN profile directory (used by polybar vpnTrigger.sh)
+export VPN_DIR="$HOME/vpn"
+
+# Temp directory
+export TMPDIR="$HOME/.cache/tmp"
+mkdir -p "$TMPDIR" 2>/dev/null
+
+# Aliases
+alias pdf='zathura'
+alias rustdesk='XDG_SESSION_TYPE=x11 rustdesk'
