@@ -1504,7 +1504,7 @@ NMEOF
                 read -rp "Search layouts [us]: " layout_search
                 layout_search="${layout_search:-us}"
                 local -a layout_matches
-                mapfile -t layout_matches < <(sed -n '/^! layout/,/^!/p' "$xkb_file" | grep -v '^!' | awk '{print $1}' | grep -i "$layout_search")
+                mapfile -t layout_matches < <(sed -n '/^! layout/,/^!/p' "$xkb_file" | grep -v '^!' | awk '{print $1}' | grep -iw "$layout_search")
                 if [ ${#layout_matches[@]} -eq 0 ]; then
                     warn "No layouts matching '$layout_search'. Try again."
                     continue
