@@ -1880,6 +1880,14 @@ XINITEOF
 export XDG_SESSION_TYPE=x11
 export XDG_SESSION_DESKTOP=i3
 export XDG_CURRENT_DESKTOP=i3
+
+# Source system xinitrc.d scripts (D-Bus, systemd user env, etc.)
+if [ -d /etc/X11/xinit/xinitrc.d ]; then
+    for f in /etc/X11/xinit/xinitrc.d/?*.sh; do
+        [ -x "$f" ] && . "$f"
+    done
+fi
+
 [ -f ~/.Xresources ] && xrdb -merge ~/.Xresources
 setxkbmap us -variant colemak_dh
 if command -v nvidia-smi &> /dev/null && nvidia-smi &> /dev/null; then
