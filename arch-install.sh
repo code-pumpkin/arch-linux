@@ -1027,13 +1027,15 @@ gather_config() {
     done
 
     # X11/Wayland keyboard layout (separate from console keymap)
+    # X11/Wayland keyboard layout (read from XKB rules, not localectl)
+    local xkb_file="/usr/share/X11/xkb/rules/base.lst"
     info "X11 keyboard layout — type a search term to filter (e.g., us, fr, de, gb):"
     while true; do
         local layout_search
         read -rp "Search layouts [us]: " layout_search
         layout_search="${layout_search:-us}"
         local -a layout_matches
-        mapfile -t layout_matches < <(localectl list-x11-keymap-layouts 2>/dev/null | grep -i "$layout_search")
+        mapfile -t layout_matches < <(sed -n '/^! layout/,/^!/p' "$xkb_file" | grep -v '^!' | awk '{print $1}' | grep -i "$layout_search")
         if [ ${#layout_matches[@]} -eq 0 ]; then
             warn "No layouts matching '$layout_search'. Try again."
             continue
@@ -1058,9 +1060,9 @@ gather_config() {
 
     # X11/Wayland layout variant (optional)
     local -a variant_list
-    mapfile -t variant_list < <(localectl list-x11-keymap-variants "$KB_LAYOUT" 2>/dev/null)
+    mapfile -t variant_list < <(sed -n '/^! variant/,/^!/p' "$xkb_file" | grep -v '^!' | grep "^ *[^ ]* *${KB_LAYOUT}:" | awk '{print $1}')
     if [ ${#variant_list[@]} -gt 0 ]; then
-        info "Available variants for '$KB_LAYOUT' (Enter to skip for default QWERTY):"
+        info "Available variants for '$KB_LAYOUT' (Enter to skip for default):"
         local j=1
         for vm in "${variant_list[@]}"; do echo "  $j) $vm"; j=$((j+1)); done
         local vp
