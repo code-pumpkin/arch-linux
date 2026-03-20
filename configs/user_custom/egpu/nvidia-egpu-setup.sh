@@ -1,15 +1,18 @@
 #!/bin/bash
 
-EGPU_UUID="004b2ae0-6fea-2701-ffff-ffffffffffff"
+# Step 1: Find any Thunderbolt peripheral (eGPU enclosure)
+EGPU_UUID=$(boltctl list 2>/dev/null | grep -B1 "type:.*peripheral" | grep -oP '[a-f0-9-]{36}' | head -1)
 
-# Step 1: Check if the eGPU is connected via Thunderbolt
-if ! boltctl info "$EGPU_UUID" &>/dev/null; then
-    echo "Razer Core X not detected on Thunderbolt bus, skipping"
+if [ -z "$EGPU_UUID" ]; then
+    echo "No Thunderbolt eGPU enclosure detected, skipping"
     exit 0
 fi
 
+DEVICE_NAME=$(boltctl info "$EGPU_UUID" 2>/dev/null | grep -oP '(?<=name:\s{8})\S.*' || echo "unknown")
+echo "eGPU enclosure found: $DEVICE_NAME (UUID: $EGPU_UUID)"
+
 STATUS=$(boltctl info "$EGPU_UUID" 2>/dev/null | grep -oP '(?<=status:\s{8})\S+')
-echo "Razer Core X found, status: $STATUS"
+echo "Status: $STATUS"
 
 # Step 2: Enroll if not stored (auto-authorize on future connects)
 STORED=$(boltctl info "$EGPU_UUID" 2>/dev/null | grep "stored:")

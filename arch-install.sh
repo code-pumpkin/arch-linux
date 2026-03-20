@@ -1876,7 +1876,12 @@ XINITEOF
         cat > /home/${username}/startx << 'STARTXEOF'
 #!/bin/bash
 if command -v nvidia-smi &> /dev/null && nvidia-smi &> /dev/null; then
-    startx -- -layout NvidiaLayout
+    if grep -q "NvidiaLayout\|nvidia" /etc/X11/xorg.conf 2>/dev/null; then
+        startx -- -layout Layout0
+    else
+        echo "WARNING: nvidia-smi found but no nvidia layout in xorg.conf"
+        startx
+    fi
 else
     startx
 fi
