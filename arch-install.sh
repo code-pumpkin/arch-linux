@@ -1537,7 +1537,17 @@ setup_user_and_rice() {
 #!/bin/bash
 set -euo pipefail
 
-useradd -m -G wheel -s /bin/bash ${username}
+if id "${username}" &>/dev/null; then
+    echo "User '${username}' already exists."
+    read -rp "Continue with existing user? [y/n]: " reuse_user
+    if [ "\$reuse_user" != "y" ]; then
+        echo "Aborting user setup."
+        exit 1
+    fi
+    usermod -aG wheel ${username}
+else
+    useradd -m -G wheel -s /bin/bash ${username}
+fi
 echo "Set password for ${username}:"
 passwd ${username}
 
