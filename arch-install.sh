@@ -1782,7 +1782,7 @@ if [ -d /root/wm-configs ]; then
             cp /root/wm-configs/vpn/README.md "\$home/vpn/" 2>/dev/null || true
             chmod +x "\$cfg/polybar/"*.sh "\$cfg/dunst/"*.sh "\$cfg/scripts/"*
             # Substitute __HOME__ placeholder in configs
-            sed -i "s|__HOME__|\\$home|g" "\$cfg/flameshot/flameshot.ini"
+            sed -i "s|__HOME__|\$home|g" "\$cfg/flameshot/flameshot.ini"
             # Deploy screenlayout
             if [ -d /root/wm-configs/screenlayout ]; then
                 mkdir -p "\$home/.screenlayout"
@@ -1884,7 +1884,7 @@ export XDG_CURRENT_DESKTOP=i3
 # Source system xinitrc.d scripts (D-Bus, systemd user env, etc.)
 if [ -d /etc/X11/xinit/xinitrc.d ]; then
     for f in /etc/X11/xinit/xinitrc.d/?*.sh; do
-        [ -x "$f" ] && . "$f"
+        [ -x "\$f" ] && . "\$f"
     done
 fi
 
