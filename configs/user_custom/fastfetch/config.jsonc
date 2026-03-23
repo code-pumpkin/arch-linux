@@ -3,72 +3,72 @@
     "logo": {
         "type": "small",
         "color": {
-            "1": "yellow"
+            "1": "blue"
         }
     },
     "display": {
-        "separator": " → ",
+        "separator": "  ",
         "color": {
-            "keys": "yellow",
+            "keys": "blue",
             "output": "white"
         }
     },
     "modules": [
         {
             "type": "title",
-            "format": "{user-name}@{host-name}"
+            "format": "{user-name-colored}@{host-name-colored}"
         },
         "separator",
         {
             "type": "os",
-            "key": "OS"
+            "key": "  OS"
         },
         {
             "type": "kernel",
-            "key": "Kernel"
+            "key": "  Kernel"
         },
         {
             "type": "wm",
-            "key": "WM"
+            "key": "  WM"
         },
         {
             "type": "terminal",
-            "key": "Term"
+            "key": "  Term"
         },
         {
             "type": "shell",
-            "key": "Shell"
+            "key": "  Shell"
         },
         {
             "type": "packages",
-            "key": "Pkgs"
+            "key": "  Pkgs"
         },
         {
             "type": "uptime",
-            "key": "Uptime"
+            "key": "  Uptime"
         },
         "separator",
         {
             "type": "cpu",
-            "key": "CPU"
+            "key": "  CPU"
         },
         {
             "type": "gpu",
-            "key": "GPU"
+            "key": "  GPU"
         },
         {
             "type": "memory",
-            "key": "RAM"
+            "key": "  RAM"
         },
         {
             "type": "disk",
-            "key": "Disk",
+            "key": "  Disk",
             "folders": "/"
         },
         "separator",
         {
             "type": "display",
-            "key": "Display"
+            "key": "  Display"
         },
         {
             "type": "colors",

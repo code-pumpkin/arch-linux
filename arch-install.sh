@@ -1431,11 +1431,12 @@ install_packages() {
             wm_pkgs="$wm_pkgs network-manager-applet xss-lock"
             ;;
         user_custom)
-            wm_pkgs="i3-wm i3status i3lock polybar dunst rofi picom feh kitty flameshot"
-            wm_pkgs="$wm_pkgs xorg-server xorg-xinit xorg-xrandr xorg-xsetroot dex"
-            wm_pkgs="$wm_pkgs network-manager-applet xss-lock lm_sensors openvpn expect"
+            wm_pkgs="i3-wm i3status i3lock polybar dunst rofi picom feh kitty flameshot fastfetch thunar"
+            wm_pkgs="$wm_pkgs xorg-server xorg-xinit xorg-xrandr xorg-xsetroot dex xsecurelock xss-lock"
+            wm_pkgs="$wm_pkgs network-manager-applet lm_sensors openvpn expect"
             wm_pkgs="$wm_pkgs input-leap otf-font-awesome ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-common nvidia-prime dkms linux-headers bolt"
-            wm_pkgs="$wm_pkgs zsh zathura zathura-pdf-mupdf zenity"
+            wm_pkgs="$wm_pkgs zsh zsh-autosuggestions zsh-syntax-highlighting zathura zathura-pdf-mupdf zenity"
+            wm_pkgs="$wm_pkgs fzf bat eza zoxide fd ripgrep"
             ;;
         sway)
             wm_pkgs="sway swaylock swayidle waybar mako wofi foot grim slurp ly"
@@ -1768,21 +1769,18 @@ if [ -d /root/wm-configs ]; then
             fi
             ;;
         user_custom)
-            mkdir -p "\$cfg/i3" "\$cfg/polybar" "\$cfg/picom" "\$cfg/dunst" "\$cfg/rofi" "\$cfg/kitty" "\$cfg/flameshot" "\$cfg/fastfetch" "\$cfg/scripts" "\$cfg/sounds" "\$home/vpn"
+            mkdir -p "\$cfg/i3" "\$cfg/polybar" "\$cfg/picom" "\$cfg/dunst" "\$cfg/rofi" "\$cfg/kitty" "\$cfg/fastfetch" "\$cfg/scripts" "\$cfg/sounds" "\$home/vpn"
             cp /root/wm-configs/i3/* "\$cfg/i3/"
             cp /root/wm-configs/polybar/* "\$cfg/polybar/"
             cp /root/wm-configs/picom/* "\$cfg/picom/"
             cp /root/wm-configs/dunst/* "\$cfg/dunst/"
             cp /root/wm-configs/rofi/* "\$cfg/rofi/"
             cp /root/wm-configs/kitty/* "\$cfg/kitty/"
-            cp /root/wm-configs/flameshot/* "\$cfg/flameshot/"
             cp /root/wm-configs/fastfetch/* "\$cfg/fastfetch/"
             cp /root/wm-configs/scripts/* "\$cfg/scripts/"
             cp /root/wm-configs/sounds/* "\$cfg/sounds/"
             cp /root/wm-configs/vpn/README.md "\$home/vpn/" 2>/dev/null || true
             chmod +x "\$cfg/polybar/"*.sh "\$cfg/dunst/"*.sh "\$cfg/scripts/"*
-            # Substitute __HOME__ placeholder in configs
-            sed -i "s|__HOME__|\$home|g" "\$cfg/flameshot/flameshot.ini"
             # Deploy screenlayout
             if [ -d /root/wm-configs/screenlayout ]; then
                 mkdir -p "\$home/.screenlayout"
@@ -1884,7 +1882,7 @@ export XDG_CURRENT_DESKTOP=i3
 # Source system xinitrc.d scripts (D-Bus, systemd user env, etc.)
 if [ -d /etc/X11/xinit/xinitrc.d ]; then
     for f in /etc/X11/xinit/xinitrc.d/?*.sh; do
-        [ -x "\$f" ] && . "\$f"
+        [ -x "$f" ] && . "$f"
     done
 fi
 

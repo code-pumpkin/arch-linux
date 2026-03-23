@@ -9,9 +9,9 @@ ICON_SCR=$'%{T2}\uf108%{T-}'
 get_camera_status() {
     local apps=$(lsof /dev/video* 2>/dev/null | awk 'NR>1 {print $1}' | sort -u | tr '\n' ',' | sed 's/,$//')
     if [ -n "$apps" ]; then
-        echo "%{F#A54242}${ICON_CAM}%{F-}"
+        echo "%{F#F38BA8}${ICON_CAM}%{F-}"
     else
-        echo "%{F#707880}${ICON_CAM}%{F-}"
+        echo "%{F#585B70}${ICON_CAM}%{F-}"
     fi
 }
 
@@ -30,11 +30,11 @@ get_mic_status() {
     local apps=$(pactl list source-outputs 2>/dev/null | grep 'application.name' | sed 's/.*= "//;s/"//' | sort -u | tr '\n' ',' | sed 's/,$//')
 
     if $all_muted; then
-        echo "%{F#707880}${ICON_MIC_MUTE}%{F-}"
+        echo "%{F#585B70}${ICON_MIC_MUTE}%{F-}"
     elif [ -n "$apps" ]; then
-        echo "%{F#A54242}${ICON_MIC}%{F-}"
+        echo "%{F#F38BA8}${ICON_MIC}%{F-}"
     else
-        echo "%{F#707880}${ICON_MIC}%{F-}"
+        echo "%{F#585B70}${ICON_MIC}%{F-}"
     fi
 }
 
@@ -99,9 +99,9 @@ walk(json.load(sys.stdin))
     fi
 
     if [ "$sharing" -eq 1 ]; then
-        echo "%{F#A54242}${ICON_SCR}%{F-}"
+        echo "%{F#F38BA8}${ICON_SCR}%{F-}"
     else
-        echo "%{F#707880}${ICON_SCR}%{F-}"
+        echo "%{F#585B70}${ICON_SCR}%{F-}"
     fi
 }
 
