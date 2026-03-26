@@ -37,7 +37,7 @@ HOSTNAME_VAL=""
 CPU_UCODE=""
 REUSE_EXISTING=false
 WM_CHOICE=""       # i3 | user_custom | sway | hyprland | kde | none
-AUR_HELPER=""      # yay-bin | paru-bin | none
+AUR_HELPER=""      # yay-bin | none
 BROWSER_PKG=""     # firefox | librewolf-bin | chromium | brave-bin | ""
 
 HOME_PART=""
@@ -1653,8 +1653,8 @@ WINEEOF
     if [ "$WM_CHOICE" != "none" ]; then
         echo ""
         header "AUR Helper"
-        echo -e "  ${BOLD}1)${NC} yay   — Yet Another Yogurt (Go, most popular)"
-        echo -e "  ${BOLD}2)${NC} paru  — Feature-rich AUR helper (Rust)"
+        echo -e "  ${BOLD}1)${NC} yay   — Yet Another Yogurt (Go, statically linked, most popular)"
+        echo -e "  ${BOLD}2)${NC} paru  — Feature-rich AUR helper (Rust) ${YELLOW}⚠ paru-bin may break on newer pacman/libalpm${NC}"
         echo -e "  ${BOLD}3)${NC} None  — Skip, install manually later"
         local aur_choice
         while true; do
