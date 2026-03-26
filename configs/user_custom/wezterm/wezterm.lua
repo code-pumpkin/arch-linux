@@ -15,14 +15,14 @@ config.line_height = 1.15
 
 -- Match kitty color scheme
 config.colors = {
-  foreground = '#8a8680',
+  foreground = '#b8b4af',
   background = '#000000',
   cursor_fg = '#000000',
   cursor_bg = '#e6b450',
   selection_fg = '#000000',
   selection_bg = '#e6b450',
-  ansi = { '#000000', '#d95757', '#7fd962', '#e6b450', '#73b8ff', '#d2a6ff', '#95e6cb', '#8a8680' },
-  brights = { '#484d58', '#d95757', '#7fd962', '#e6b450', '#73b8ff', '#d2a6ff', '#95e6cb', '#8a8680' },
+  ansi = { '#000000', '#d95757', '#7fd962', '#e6b450', '#73b8ff', '#d2a6ff', '#95e6cb', '#b8b4af' },
+  brights = { '#484d58', '#d95757', '#7fd962', '#e6b450', '#73b8ff', '#d2a6ff', '#95e6cb', '#b8b4af' },
 }
 config.window_background_opacity = 1.0
 config.hide_tab_bar_if_only_one_tab = true
