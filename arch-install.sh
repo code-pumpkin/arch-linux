@@ -37,10 +37,8 @@ HOSTNAME_VAL=""
 CPU_UCODE=""
 REUSE_EXISTING=false
 WM_CHOICE=""       # i3 | user_custom | sway | hyprland | kde | none
-AUR_HELPER=""      # yay | paru | none
+AUR_HELPER=""      # yay-bin | paru-bin | none
 BROWSER_PKG=""     # firefox | librewolf-bin | chromium | brave-bin | ""
-EGPU_SETUP=""      # yes | ""
-EGPU_NVIDIA=""     # 470xx | latest | ""
 
 HOME_PART=""
 EXTRA_LV_NAMES=()   # e.g., (data media)
@@ -1367,17 +1365,57 @@ install_packages() {
     echo -e "  ${BOLD}3)${NC} Sway       — Tiling compositor (Wayland, i3-compatible) + waybar, wofi, foot"
     echo -e "  ${BOLD}4)${NC} Hyprland   — Animated compositor (Wayland) + waybar, wofi, foot"
     echo -e "  ${BOLD}5)${NC} KDE Plasma — Full desktop (Windows-like, great for switchers)"
-    echo -e "  ${BOLD}6)${NC} None       — Base system only, no graphical environment"
+    echo -e "  ${BOLD}6)${NC} Custom     — Load config from a Git repo (must have index.sh)"
+    echo -e "  ${BOLD}7)${NC} None       — Base system only, no graphical environment"
     echo ""
     while true; do
-        read -rp "Select environment [1-6]: " wm_choice
+        read -rp "Select environment [1-7]: " wm_choice
         case "$wm_choice" in
             1) WM_CHOICE="i3"; break ;;
             2) WM_CHOICE="user_custom"; break ;;
             3) WM_CHOICE="sway"; break ;;
             4) WM_CHOICE="hyprland"; break ;;
             5) WM_CHOICE="kde"; break ;;
-            6) WM_CHOICE="none"; break ;;
+            6)
+                echo ""
+                info "Enter a Git URL containing your config (must have an index.sh at the root or inside a configs/ subdirectory)."
+                warn "The repo must be public — SSH/auth is likely not configured yet on a fresh install."
+                info "Example: https://github.com/user/my-rice.git"
+                read -rp "Git URL: " CUSTOM_GIT_URL
+                while [ -z "$CUSTOM_GIT_URL" ]; do
+                    warn "URL cannot be empty."
+                    read -rp "Git URL: " CUSTOM_GIT_URL
+                done
+                # Clone to a temp location, find the config
+                local tmp_clone
+                tmp_clone=$(mktemp -d)
+                if git clone --depth=1 "$CUSTOM_GIT_URL" "$tmp_clone/repo" 2>/dev/null; then
+                    # Look for index.sh at root or in a subdirectory
+                    if [ -f "$tmp_clone/repo/index.sh" ]; then
+                        CUSTOM_CONFIG_DIR="$tmp_clone/repo"
+                    elif [ -d "$tmp_clone/repo/configs" ]; then
+                        # Find first directory with an index.sh
+                        CUSTOM_CONFIG_DIR=$(find "$tmp_clone/repo/configs" -maxdepth 2 -name "index.sh" -printf '%h\n' | head -1)
+                    fi
+                    if [ -n "$CUSTOM_CONFIG_DIR" ] && [ -f "$CUSTOM_CONFIG_DIR/index.sh" ]; then
+                        # Copy into our configs directory so the rest of the flow works
+                        cp -r "$CUSTOM_CONFIG_DIR" "$SCRIPT_DIR/configs/_custom_remote"
+                        WM_CHOICE="_custom_remote"
+                        msg "Custom config loaded from $CUSTOM_GIT_URL"
+                    else
+                        warn "No index.sh found in the repo. See configs/custom_template/README.md for the expected format."
+                        rm -rf "$tmp_clone"
+                        continue
+                    fi
+                else
+                    warn "Failed to clone $CUSTOM_GIT_URL — check the URL and try again."
+                    rm -rf "$tmp_clone"
+                    continue
+                fi
+                rm -rf "$tmp_clone"
+                break
+                ;;
+            7) WM_CHOICE="none"; break ;;
             *) echo "Invalid choice." ;;
         esac
     done
@@ -1437,6 +1475,18 @@ install_packages() {
             wm_pkgs="$wm_pkgs input-leap otf-font-awesome ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-common nvidia-prime dkms linux-headers bolt"
             wm_pkgs="$wm_pkgs zsh zsh-autosuggestions zsh-syntax-highlighting zathura zathura-pdf-mupdf zenity"
             wm_pkgs="$wm_pkgs fzf bat eza zoxide fd ripgrep"
+            # Dev tools & languages
+            wm_pkgs="$wm_pkgs rsync nodejs npm python python-pip rustup go base-devel openbsd-netcat"
+            # Android
+            wm_pkgs="$wm_pkgs android-tools scrcpy"
+            # Apps & media
+            wm_pkgs="$wm_pkgs qutebrowser wezterm lf yazi mpv sxiv redshift gnuradio"
+            # Postgres client
+            wm_pkgs="$wm_pkgs postgresql-libs"
+            # Dark theme / Qt / GTK / fonts / input
+            wm_pkgs="$wm_pkgs qt5ct qt6ct xsettingsd xdg-desktop-portal-gtk"
+            wm_pkgs="$wm_pkgs inter-font noto-fonts-extra noto-fonts-emoji otf-opendyslexic-nerd"
+            wm_pkgs="$wm_pkgs fcitx5 fcitx5-gtk fcitx5-qt fcitx5-configtool"
             ;;
         sway)
             wm_pkgs="sway swaylock swayidle waybar mako wofi foot grim slurp ly"
@@ -1451,6 +1501,16 @@ install_packages() {
             ;;
         none)
             info "No graphical packages will be installed."
+            ;;
+        *)
+            # Custom remote or unknown — check for a packages.txt in the config
+            if [ -f "$SCRIPT_DIR/configs/$WM_CHOICE/packages.txt" ]; then
+                wm_pkgs=$(grep -v '^#' "$SCRIPT_DIR/configs/$WM_CHOICE/packages.txt" | tr '\n' ' ')
+                info "Loaded packages from custom config's packages.txt"
+            else
+                info "No packages.txt found in custom config — only base packages will be installed."
+                info "You can install additional packages after reboot."
+            fi
             ;;
     esac
 
@@ -1600,8 +1660,8 @@ WINEEOF
         while true; do
             read -rp "Select AUR helper [1-3]: " aur_choice
             case "$aur_choice" in
-                1) AUR_HELPER="yay"; break ;;
-                2) AUR_HELPER="paru"; break ;;
+                1) AUR_HELPER="yay-bin"; break ;;
+                2) AUR_HELPER="paru-bin"; break ;;
                 3) AUR_HELPER="none"; break ;;
                 *) echo "Invalid choice." ;;
             esac
@@ -1644,29 +1704,6 @@ WINEEOF
             esac
         fi
     fi
-
-    # --- eGPU setup (user_custom only) ---
-    if [ "$WM_CHOICE" = "user_custom" ]; then
-        echo ""
-        info "Do you use an NVIDIA eGPU via Thunderbolt (Razer Core X)?"
-        if confirm "Install eGPU auto-setup (bolt auth + nvidia driver loading + xorg config)?"; then
-            EGPU_SETUP="yes"
-            echo ""
-            info "Which NVIDIA GPU is in your eGPU?"
-            echo -e "  ${BOLD}1)${NC} GTX 1050 or older (Kepler/Maxwell/Pascal ≤1050) — nvidia-470xx (AUR/DKMS)"
-            echo -e "  ${BOLD}2)${NC} GTX 1060 or newer — nvidia (latest, official repos)"
-            local nv_egpu
-            while true; do
-                read -rp "NVIDIA driver [1/2]: " nv_egpu
-                case "$nv_egpu" in
-                    1) EGPU_NVIDIA="470xx"; break ;;
-                    2) EGPU_NVIDIA="latest"; break ;;
-                    *) echo "Invalid choice." ;;
-                esac
-            done
-            msg "eGPU setup will be deployed during user setup."
-        fi
-    fi
 }
 
 # ============================================================
@@ -1704,16 +1741,6 @@ setup_user_and_rice() {
         cp -r "$SCRIPT_DIR/configs/$WM_CHOICE" /mnt/root/wm-configs
     fi
 
-    # Deploy eGPU files if requested
-    if [ "$EGPU_SETUP" = "yes" ] && [ -d "$SCRIPT_DIR/configs/user_custom/egpu" ]; then
-        msg "Deploying eGPU setup files..."
-        cp "$SCRIPT_DIR/configs/user_custom/egpu/nvidia-egpu-setup.sh" /mnt/usr/local/bin/nvidia-egpu-setup.sh
-        chmod +x /mnt/usr/local/bin/nvidia-egpu-setup.sh
-        cp "$SCRIPT_DIR/configs/user_custom/egpu/nvidia-egpu.service" /mnt/etc/systemd/system/nvidia-egpu.service
-        mkdir -p /mnt/etc/X11/xorg.conf.d
-        cp "$SCRIPT_DIR/configs/user_custom/egpu/10-nvidia-egpu.conf" /mnt/etc/X11/xorg.conf.d/10-nvidia-egpu.conf
-    fi
-
     # Build session hint
     local session_hint=""
     case "$WM_CHOICE" in
@@ -1723,6 +1750,7 @@ setup_user_and_rice() {
         hyprland)       session_hint="Hyprland starts via ly display manager." ;;
         kde)            session_hint="KDE starts automatically via SDDM." ;;
         none)           session_hint="No graphical environment installed." ;;
+        *)              session_hint="Custom config deployed. Check your index.sh for login instructions." ;;
     esac
 
     cat > /mnt/root/user-setup.sh << USEREOF
@@ -1745,89 +1773,17 @@ passwd ${username}
 
 sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
-# Deploy WM configs from bundled templates
-if [ -d /root/wm-configs ]; then
+# Deploy WM configs via index.sh
+if [ -d /root/wm-configs ] && [ -f /root/wm-configs/index.sh ]; then
     home="/home/${username}"
     cfg="\$home/.config"
+    SRC="/root/wm-configs"
+    username="${username}"
+    KB_LAYOUT="${KB_LAYOUT}"
+    KB_VARIANT="${KB_VARIANT}"
+    export home cfg SRC username KB_LAYOUT KB_VARIANT
     mkdir -p "\$cfg"
-
-    case "${WM_CHOICE}" in
-        i3)
-            mkdir -p "\$cfg/i3" "\$cfg/polybar" "\$cfg/picom" "\$cfg/dunst" "\$cfg/rofi" "\$cfg/alacritty"
-            cp /root/wm-configs/config "\$cfg/i3/config"
-            cp /root/wm-configs/polybar/* "\$cfg/polybar/"
-            cp /root/wm-configs/picom/* "\$cfg/picom/"
-            cp /root/wm-configs/dunst/* "\$cfg/dunst/"
-            cp /root/wm-configs/rofi/* "\$cfg/rofi/"
-            cp /root/wm-configs/alacritty/* "\$cfg/alacritty/"
-            chmod +x "\$cfg/polybar/launch.sh"
-            # Set keyboard layout
-            if [ -n "${KB_VARIANT}" ]; then
-                echo "exec_always --no-startup-id setxkbmap ${KB_LAYOUT} -variant ${KB_VARIANT}" >> "\$cfg/i3/config"
-            else
-                echo "exec_always --no-startup-id setxkbmap ${KB_LAYOUT}" >> "\$cfg/i3/config"
-            fi
-            ;;
-        user_custom)
-            mkdir -p "\$cfg/i3" "\$cfg/polybar" "\$cfg/picom" "\$cfg/dunst" "\$cfg/rofi" "\$cfg/kitty" "\$cfg/fastfetch" "\$cfg/scripts" "\$cfg/sounds" "\$home/vpn"
-            cp /root/wm-configs/i3/* "\$cfg/i3/"
-            cp /root/wm-configs/polybar/* "\$cfg/polybar/"
-            cp /root/wm-configs/picom/* "\$cfg/picom/"
-            cp /root/wm-configs/dunst/* "\$cfg/dunst/"
-            cp /root/wm-configs/rofi/* "\$cfg/rofi/"
-            cp /root/wm-configs/kitty/* "\$cfg/kitty/"
-            cp /root/wm-configs/fastfetch/* "\$cfg/fastfetch/"
-            cp /root/wm-configs/scripts/* "\$cfg/scripts/"
-            cp /root/wm-configs/sounds/* "\$cfg/sounds/"
-            cp /root/wm-configs/vpn/README.md "\$home/vpn/" 2>/dev/null || true
-            chmod +x "\$cfg/polybar/"*.sh "\$cfg/dunst/"*.sh "\$cfg/scripts/"*
-            # Deploy screenlayout
-            if [ -d /root/wm-configs/screenlayout ]; then
-                mkdir -p "\$home/.screenlayout"
-                cp /root/wm-configs/screenlayout/* "\$home/.screenlayout/"
-                chmod +x "\$home/.screenlayout/"*.sh
-            fi
-            # Deploy xorg.conf — substitute Intel BusID at install time
-            if [ -f /root/wm-configs/xorg.conf ]; then
-                cp /root/wm-configs/xorg.conf /etc/X11/xorg.conf
-                INTEL_PCI=\$(lspci | grep -i 'vga.*intel' | head -1 | cut -d' ' -f1)
-                if [ -n "\$INTEL_PCI" ]; then
-                    INTEL_BUSID="PCI:\$(echo "\$INTEL_PCI" | awk -F'[:.]' '{printf "%d:%d:%d", \$1, \$2, \$3}')"
-                    sed -i "s|__INTEL_BUSID__|\$INTEL_BUSID|g" /etc/X11/xorg.conf
-                fi
-            fi
-            ;;
-        sway)
-            mkdir -p "\$cfg/sway" "\$cfg/waybar" "\$cfg/mako" "\$cfg/wofi" "\$cfg/foot"
-            cp /root/wm-configs/config "\$cfg/sway/config"
-            cp /root/wm-configs/waybar/* "\$cfg/waybar/"
-            cp /root/wm-configs/mako/* "\$cfg/mako/"
-            cp /root/wm-configs/wofi/* "\$cfg/wofi/"
-            cp /root/wm-configs/foot/* "\$cfg/foot/"
-            # Set keyboard layout
-            sed -i 's/xkb_layout us/xkb_layout ${KB_LAYOUT}/' "\$cfg/sway/config"
-            if [ -n "${KB_VARIANT}" ]; then
-                sed -i '/xkb_layout ${KB_LAYOUT}/a\\    xkb_variant ${KB_VARIANT}' "\$cfg/sway/config"
-            fi
-            ;;
-        hyprland)
-            mkdir -p "\$cfg/hypr" "\$cfg/waybar" "\$cfg/wofi" "\$cfg/foot"
-            cp /root/wm-configs/hyprland.conf "\$cfg/hypr/hyprland.conf"
-            cp /root/wm-configs/waybar/* "\$cfg/waybar/"
-            cp /root/wm-configs/wofi/* "\$cfg/wofi/"
-            cp /root/wm-configs/foot/* "\$cfg/foot/"
-            # Set keyboard layout
-            sed -i 's/kb_layout = us/kb_layout = ${KB_LAYOUT}/' "\$cfg/hypr/hyprland.conf"
-            if [ -n "${KB_VARIANT}" ]; then
-                sed -i '/kb_layout = ${KB_LAYOUT}/a\\    kb_variant = ${KB_VARIANT}' "\$cfg/hypr/hyprland.conf"
-            fi
-            ;;
-        kde)
-            cp /root/wm-configs/kwinrc "\$cfg/kwinrc" 2>/dev/null || true
-            cp /root/wm-configs/plasma-org.kde.plasma.desktop-appletsrc "\$cfg/plasma-org.kde.plasma.desktop-appletsrc" 2>/dev/null || true
-            ;;
-    esac
-
+    bash /root/wm-configs/index.sh
     chown -R ${username}:${username} "\$home"
     rm -rf /root/wm-configs
     echo "Config templates deployed to \$cfg/"
@@ -1847,18 +1803,6 @@ KBEOF
 if [ -n "${KB_VARIANT}" ]; then
     sed -i '/EndSection/i\\    Option "XkbVariant" "${KB_VARIANT}"' /etc/X11/xorg.conf.d/00-keyboard.conf
 fi
-fi
-
-# Enable eGPU service if deployed
-if [ -f /etc/systemd/system/nvidia-egpu.service ]; then
-    systemctl enable nvidia-egpu.service
-    echo "eGPU auto-setup service enabled."
-    # Install NVIDIA driver based on GPU generation
-    if [ "${EGPU_NVIDIA}" != "470xx" ]; then
-        pacman -S --noconfirm --needed nvidia-dkms nvidia-utils nvidia-settings || {
-            echo "NOTE: DKMS module build failed in chroot (expected). It will build on first boot."
-        }
-    fi
 fi
 
 # Create .xinitrc for X11-based WMs
@@ -1923,8 +1867,7 @@ if [ "${AUR_HELPER}" != "none" ] && [ -n "${AUR_HELPER}" ]; then
     sudo -u ${username} git clone https://aur.archlinux.org/${AUR_HELPER}.git
     cd ${AUR_HELPER}
     sudo -u ${username} makepkg -si --noconfirm || {
-        echo "ERROR: AUR helper install failed. If a conflicting package exists, run:"
-        echo "  pacman -Rns ${AUR_HELPER}-bin --noconfirm  (or vice versa)"
+        echo "ERROR: AUR helper install failed."
         echo "Then re-run the installer and resume."
     }
     cd /
@@ -1936,8 +1879,8 @@ fi
 if [ -n "${BROWSER_PKG}" ]; then
     case "${BROWSER_PKG}" in
         librewolf-bin|brave-bin)
-            if command -v ${AUR_HELPER} &>/dev/null; then
-                sudo -u ${username} ${AUR_HELPER} -S --noconfirm ${BROWSER_PKG}
+            if command -v ${AUR_HELPER%%-bin*} &>/dev/null; then
+                sudo -u ${username} ${AUR_HELPER%%-bin*} -S --noconfirm ${BROWSER_PKG}
             else
                 echo "AUR helper not available. Install '${BROWSER_PKG}' manually after reboot."
             fi
@@ -1945,16 +1888,23 @@ if [ -n "${BROWSER_PKG}" ]; then
     esac
 fi
 
-# Install nvidia-470xx via AUR if eGPU needs legacy driver
-if [ "${EGPU_NVIDIA}" = "470xx" ]; then
-    if command -v ${AUR_HELPER} &>/dev/null; then
-        sudo -u ${username} ${AUR_HELPER} -S --noconfirm nvidia-470xx-dkms nvidia-470xx-utils opencl-nvidia-470xx || {
-            echo "NOTE: DKMS module build failed in chroot (expected). It will build on first boot."
-        }
-    else
-        echo "ERROR: AUR helper not available. Install nvidia-470xx-dkms manually after reboot:"
-        echo "  ${AUR_HELPER} -S nvidia-470xx-dkms nvidia-470xx-utils opencl-nvidia-470xx"
+# user_custom: install Rust toolchain + AUR packages
+if [ "${WM_CHOICE}" = "user_custom" ]; then
+    # Rust toolchain via rustup (already installed as pacman pkg)
+    sudo -u ${username} rustup default stable || echo "NOTE: rustup setup had warnings."
+
+    # AUR packages
+    if command -v ${AUR_HELPER%%-bin*} &>/dev/null; then
+        sudo -u ${username} ${AUR_HELPER%%-bin*} -S --noconfirm --needed \
+            vibrant-cli ttf-amiri \
+            rustdesk-bin nchat-git discordo-git \
+            openboardview-git carbonyl brow6el-git \
+            nerd-dictation-git \
+            2>/dev/null || echo "NOTE: Some AUR packages may have failed (check above)."
     fi
+
+    # awrit (terminal browser — standalone installer)
+    sudo -u ${username} bash -c 'curl -fsS https://chase.github.io/awrit/get | bash' 2>/dev/null || echo "NOTE: awrit install skipped or failed."
 fi
 
 # Enable pipewire user services
@@ -1973,14 +1923,12 @@ if [ "${WM_CHOICE}" = "user_custom" ]; then
     sudo -u ${username} git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /home/${username}/.oh-my-zsh/custom/themes/powerlevel10k 2>/dev/null || {
         echo "NOTE: powerlevel10k clone had warnings."
     }
-    # Deploy .zshrc and .p10k.zsh
+    # Deploy .zshrc, .zshenv, and .p10k.zsh
     cp /root/wm-configs/zshrc /home/${username}/.zshrc 2>/dev/null || true
+    cp /root/wm-configs/zshenv /home/${username}/.zshenv 2>/dev/null || true
     cp /root/wm-configs/p10k.zsh /home/${username}/.p10k.zsh 2>/dev/null || true
     cp /root/wm-configs/Xresources /home/${username}/.Xresources 2>/dev/null || true
-    # Deploy post-install.sh
-    cp /root/wm-configs/post-install.sh /home/${username}/post-install.sh 2>/dev/null || true
-    chmod +x /home/${username}/post-install.sh 2>/dev/null || true
-    chown -R ${username}:${username} /home/${username}/.zshrc /home/${username}/.p10k.zsh /home/${username}/.oh-my-zsh /home/${username}/post-install.sh 2>/dev/null || true
+    chown -R ${username}:${username} /home/${username}/.zshrc /home/${username}/.zshenv /home/${username}/.p10k.zsh /home/${username}/.oh-my-zsh 2>/dev/null || true
     echo "zsh + oh-my-zsh + powerlevel10k installed."
 fi
 
@@ -2182,8 +2130,6 @@ REUSE_EXISTING=$REUSE_EXISTING
 WM_CHOICE="$WM_CHOICE"
 AUR_HELPER="$AUR_HELPER"
 BROWSER_PKG="$BROWSER_PKG"
-EGPU_SETUP="$EGPU_SETUP"
-EGPU_NVIDIA="$EGPU_NVIDIA"
 EXTRA_LV_NAMES=($extra_names)
 EXTRA_LV_SIZES=($extra_sizes)
 EXTRA_LV_MOUNTS=($extra_mounts)

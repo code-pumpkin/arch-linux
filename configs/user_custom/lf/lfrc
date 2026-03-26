@@ -1,0 +1,45 @@
+# Open PDFs with zathura only when explicitly opened
+cmd open ${{
+    case $(file --mime-type -Lb $f) in
+        application/pdf) zathura "$f" & ;;
+        image/*) kitty +kitten icat "$f" ;;
+        *) xdg-open "$f" ;;
+    esac
+}}
+
+# PDF page navigation
+cmd pdf_next_page ${{
+    if [ "$(file --mime-type -Lb "$f")" = "application/pdf" ]; then
+        state_file="/tmp/lf_pdf_page_$(echo "$f" | md5sum | cut -d' ' -f1)"
+        page=$(cat "$state_file" 2>/dev/null || echo "1")
+        max_page=$(pdfinfo "$f" | grep "Pages:" | awk '{print $2}')
+        if [ "$page" -lt "$max_page" ]; then
+            echo $((page + 1)) > "$state_file"
+            lf -remote "send $id reload"
+        else
+            lf -remote "send $id echo 'Last page ($max_page)'"
+        fi
+    fi
+}}
+
+cmd pdf_prev_page ${{
+    if [ "$(file --mime-type -Lb "$f")" = "application/pdf" ]; then
+        state_file="/tmp/lf_pdf_page_$(echo "$f" | md5sum | cut -d' ' -f1)"
+        page=$(cat "$state_file" 2>/dev/null || echo "1")
+        if [ "$page" -gt "1" ]; then
+            echo $((page - 1)) > "$state_file"
+            lf -remote "send $id reload"
+        else
+            lf -remote "send $id echo 'First page'"
+        fi
+    fi
+}}
+
+# Map keys for PDF navigation
+map ] pdf_next_page
+map [ pdf_prev_page
+
+# Preview PDFs and images
+set previewer ~/.config/lf/preview.sh
+set cleaner ~/.config/lf/cleaner.sh
+set preview true

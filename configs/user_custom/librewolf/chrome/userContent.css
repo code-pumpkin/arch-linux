@@ -1,0 +1,16 @@
+/* Force Noto Sans Arabic for all Arabic Unicode characters on all sites */
+@font-face {
+  font-family: "RedditOverride";
+  src: local("Noto Sans Arabic");
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+
+* {
+  font-family: "RedditOverride", "Noto Sans Arabic", "Inter", "Noto Serif", sans-serif !important;
+}
+
+/* Prevent white flash before Dark Reader loads */
+:root {
+  background-color: #0d1017 !important;
+  color-scheme: dark !important;
+}

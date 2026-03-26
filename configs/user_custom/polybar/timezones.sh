@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Default timezones for polybar display
-UAE_TZ="Asia/Dubai"
-NL_TZ="America/St_Johns"
+# Read timezones from zshrc config, fall back to defaults
+TZ1="${POLYBAR_TZ1:-America/New_York}"
+TZ2="${POLYBAR_TZ2:-Asia/Tokyo}"
 
 # All available timezones for menu
 declare -A TIMEZONES=(
@@ -20,9 +20,7 @@ declare -A TIMEZONES=(
 
 case $1 in
 menu)
-  # Show rofi menu with all timezones
   SELECTED=$(printf '%s\n' "${!TIMEZONES[@]}" | sort | rofi -dmenu -i -p "Select Timezone:" 2>/dev/null)
-  
   if [ -n "$SELECTED" ]; then
     TZ_VALUE="${TIMEZONES[$SELECTED]}"
     TZ_TIME=$(TZ="$TZ_VALUE" date +'%H:%M %a %m/%d')
@@ -30,7 +28,6 @@ menu)
   fi
   ;;
 notify)
-  # Show all timezones in notify-send
   NOTIFY_TEXT=""
   for country in "${!TIMEZONES[@]}"; do
     TZ_VALUE="${TIMEZONES[$country]}"
@@ -40,9 +37,8 @@ notify)
   notify-send "🌍 All Timezones" "$(echo -e "$NOTIFY_TEXT")" -u low -t 5000
   ;;
 *)
-  # Display UAE and NL by default with country names
-  uae_time=$(TZ="$UAE_TZ" date +'%H:%M')
-  nl_time=$(TZ="$NL_TZ" date +'%H:%M %m/%d')
-  echo "${uae_time} | ${nl_time}"
+  tz1_time=$(TZ="$TZ1" date +'%H:%M')
+  tz2_time=$(TZ="$TZ2" date +'%H:%M %m/%d')
+  echo "${tz1_time} | ${tz2_time}"
   ;;
 esac

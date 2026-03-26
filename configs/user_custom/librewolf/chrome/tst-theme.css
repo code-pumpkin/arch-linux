@@ -1,0 +1,266 @@
+/* ============================================
+   Tree Style Tab - Ayu Dark Neovim Theme
+   Paste into TST Preferences > Advanced > Extra style rules
+   ============================================ */
+
+/* ── Ayu Dark palette (matches YouTube theme) ── */
+:root {
+  --bg:       #0d1017;
+  --bg-dark:  #0b0e14;
+  --bg-float: #131721;
+  --bg-hover: #1a1e29;
+  --bg-sel:   #1d222e;
+  --fg:       #bfbdb6;
+  --fg-dim:   #565b66;
+  --fg-dark:  #484d58;
+  --border:   #1d222e;
+  --accent:   #e6b450;
+  --green:    #7fd962;
+  --red:      #d95757;
+  --yellow:   #ffb454;
+  --cyan:     #73b8ff;
+  --magenta:  #d2a6ff;
+  --tab-h:    30px;
+}
+
+/* ── Sidebar ── */
+#tabbar {
+  background: var(--bg-dark) !important;
+  border: none !important;
+  scrollbar-width: none !important;  /* hide scrollbar, scroll still works */
+}
+
+#tabbar:hover {
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--fg-dark) transparent !important;
+}
+
+/* ── New tab button ── */
+.newtab-button-box {
+  background: var(--bg-dark) !important;
+  border-top: 1px solid var(--border) !important;
+}
+
+.newtab-button {
+  background: transparent !important;
+  color: var(--fg-dark) !important;
+  border: none !important;
+  margin: 4px 8px !important;
+  height: 26px !important;
+  opacity: 0.5 !important;
+  transition: opacity 0.15s !important;
+}
+
+.newtab-button:hover {
+  background: var(--bg-hover) !important;
+  color: var(--accent) !important;
+  opacity: 1 !important;
+}
+
+/* ── All tabs ── */
+tab-item {
+  height: var(--tab-h) !important;
+  background: transparent !important;
+  border: none !important;
+  margin: 0 !important;
+  padding: 0 4px 0 0 !important;
+  border-left: 2px solid transparent !important;
+  transition: background 0.1s, border-color 0.1s !important;
+}
+
+tab-item .background {
+  background: transparent !important;
+}
+
+tab-item tab-label {
+  color: var(--fg-dim) !important;
+  font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace !important;
+  font-size: 11px !important;
+  line-height: var(--tab-h) !important;
+  padding-left: 4px !important;
+}
+
+/* ── Hover ── */
+tab-item:hover {
+  background: var(--bg-hover) !important;
+}
+
+tab-item:hover tab-label {
+  color: var(--fg) !important;
+}
+
+/* ── Active tab — neovim current buffer ── */
+tab-item.active {
+  background: var(--bg-sel) !important;
+  border-left: 2px solid var(--accent) !important;
+}
+
+tab-item.active .background {
+  background: var(--bg-sel) !important;
+}
+
+tab-item.active tab-label {
+  color: var(--accent) !important;
+  font-weight: bold !important;
+}
+
+tab-item.active .favicon {
+  filter: none !important;
+}
+
+/* ── Highlighted (multi-select) ── */
+tab-item.highlighted:not(.active) {
+  background: var(--bg-hover) !important;
+  border-left: 2px solid var(--cyan) !important;
+}
+
+tab-item.highlighted:not(.active) tab-label {
+  color: var(--cyan) !important;
+}
+
+/* ── Unread tabs ── */
+tab-item.unread:not(.active) tab-label {
+  color: var(--green) !important;
+  font-style: italic !important;
+}
+
+/* ── Loading ── */
+tab-item.loading tab-label {
+  color: var(--yellow) !important;
+}
+
+tab-item.loading .throbber {
+  color: var(--yellow) !important;
+}
+
+/* ── Discarded / unloaded tabs ── */
+tab-item.discarded tab-label {
+  color: var(--fg-dark) !important;
+  font-style: italic !important;
+  opacity: 0.6 !important;
+}
+
+tab-item.discarded .favicon {
+  opacity: 0.4 !important;
+}
+
+/* ── Pinned tabs — accent2 marker ── */
+tab-item.pinned {
+  border-left: 2px solid var(--cyan) !important;
+  height: 26px !important;
+}
+
+tab-item.pinned tab-label {
+  color: var(--cyan) !important;
+  font-size: 10px !important;
+}
+
+/* ── Favicon ── */
+tab-item .favicon {
+  filter: grayscale(40%) brightness(0.8) !important;
+  transition: filter 0.15s !important;
+}
+
+tab-item:hover .favicon {
+  filter: none !important;
+}
+
+/* ── Close button — hidden until hover ── */
+tab-closebox {
+  display: none !important;
+}
+
+tab-item:hover tab-closebox {
+  display: block !important;
+  opacity: 0.4 !important;
+  color: var(--fg-dim) !important;
+  transition: opacity 0.1s, color 0.1s !important;
+}
+
+tab-item:hover tab-closebox:hover {
+  opacity: 1 !important;
+  color: var(--red) !important;
+}
+
+/* ── Sound indicator ── */
+tab-item tab-sound-button {
+  color: var(--accent) !important;
+  opacity: 0.8 !important;
+}
+
+tab-item tab-sound-button:hover {
+  color: var(--red) !important;
+  opacity: 1 !important;
+}
+
+/* ── Tree structure — indent lines ── */
+tab-item .extra-items-container.indent {
+  border-left: 1px solid var(--border) !important;
+  margin-left: 2px !important;
+}
+
+/* Twisty (collapse arrow) */
+tab-item .twisty {
+  color: var(--fg-dark) !important;
+  opacity: 0.6 !important;
+}
+
+tab-item:hover .twisty {
+  color: var(--fg) !important;
+  opacity: 1 !important;
+}
+
+/* Collapsed tree indicator */
+tab-item.subtree-collapsed .twisty {
+  color: var(--accent) !important;
+  opacity: 0.8 !important;
+}
+
+/* Tab counter badge for collapsed trees */
+tab-item .counter {
+  background: var(--bg-sel) !important;
+  color: var(--fg-dim) !important;
+  font-family: "JetBrains Mono", monospace !important;
+  font-size: 9px !important;
+  border: 1px solid var(--border) !important;
+  padding: 0 4px !important;
+  margin-left: 4px !important;
+}
+
+/* ── Drag and drop ── */
+tab-item.dragging {
+  opacity: 0.4 !important;
+}
+
+tab-item[data-drop-position="before"] {
+  border-top: 2px solid var(--accent) !important;
+}
+
+tab-item[data-drop-position="after"] {
+  border-bottom: 2px solid var(--accent) !important;
+}
+
+tab-item[data-drop-position="self"] {
+  background: var(--bg-sel) !important;
+  outline: 1px solid var(--accent) !important;
+  outline-offset: -1px !important;
+}
+
+/* ── Context menu inside TST ── */
+#tabContextMenu {
+  background: var(--bg-float) !important;
+  color: var(--fg) !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* ── Group tabs ── */
+tab-item[data-child-ids] > .background {
+  background: transparent !important;
+}
+
+/* ── Separator between pinned and normal ── */
+tab-item.pinned + tab-item:not(.pinned) {
+  border-top: 1px solid var(--border) !important;
+  margin-top: 4px !important;
+  padding-top: 4px !important;
+}

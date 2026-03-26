@@ -1,0 +1,78 @@
+" Tridactyl config - Neovim-like browsing
+" Reload with :source
+
+" Clean slate
+sanitise tridactyllocal tridactylsync
+
+" General
+set smoothscroll true
+set newtab about:blank
+set editorcmd foot -e nvim %f
+set hintchars hjklasdfgyuiopqwertnmzxcvb
+
+" Theme
+colourscheme dark
+
+" Keybinds - Neovim style
+" Scrolling
+bind j scrollline 5
+bind k scrollline -5
+bind d scrollpage 0.5
+bind u scrollpage -0.5
+bind G scrollto 100
+bind gg scrollto 0
+
+" Tab management
+bind J tabnext
+bind K tabprev
+bind x tabclose
+bind X undo
+bind t fillcmdline tabopen
+bind T fillcmdline tabopen -b
+bind gT tabprev
+bind gt tabnext
+bind g0 tabfirst
+bind g$ tablast
+
+" Navigation
+bind o fillcmdline open
+bind O fillcmdline open -c
+bind H back
+bind L forward
+bind r reload
+bind R reloadhard
+
+" Hints (like EasyMotion)
+bind f hint
+bind F hint -b
+
+" Find
+bind / fillcmdline find
+bind n findnext
+bind N findnext --reverse
+
+" Clipboard
+bind yy clipboard yank
+bind p clipboard open
+bind P clipboard tabopen
+
+" Misc
+bind gi focusinput -l
+bind gr reader
+bind >> zoom 0.1 true
+bind << zoom -0.1 true
+bind == zoom 1
+
+" Disable tridactyl on certain sites
+autocmd DocStart mail.google.com mode ignore
+autocmd DocStart docs.google.com mode ignore
+autocmd DocStart discord.com mode ignore
+
+" YouTube: unbind keys that the userscript uses
+unbindurl www.youtube.com ,
+unbindurl www.youtube.com \\
+unbindurl www.youtube.com 1
+unbindurl www.youtube.com 2
+unbindurl www.youtube.com 3
+unbindurl www.youtube.com 4
+unbindurl www.youtube.com <Escape>

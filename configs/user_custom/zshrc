@@ -3,8 +3,11 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# --- PATH (all in one place, no exports needed after login) ---
-export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.cargo/bin:$PATH"
+# --- PATH ---
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+
+# Cargo env (only if installed via rustup)
+[[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"
 
 # --- Environment ---
 export EDITOR=nvim
@@ -13,29 +16,20 @@ export LANG=en_US.UTF-8
 export BROWSER=librewolf
 export TERMINAL=kitty
 
+# Polybar timezones
+export POLYBAR_TZ1="America/New_York"
+export POLYBAR_TZ2="Asia/Tokyo"
+
 # XDG
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CACHE_HOME="$HOME/.cache"
 export XDG_STATE_HOME="$HOME/.local/state"
 
-# API keys
-export ANTHROPIC_API_KEY="YOUR_ANTHROPIC_API_KEY"
-export OPENAI_API_KEY="YOUR_OPENAI_API_KEY"
-export OPENAI_BASE_URL="https://api.openai.com/v1"
-
-# Dynamic AI base URL — probe local servers
-if [[ -x "$HOME/.local/bin/resolve-ai-base-url.sh" ]]; then
-  export ANTHROPIC_BASE_URL="$($HOME/.local/bin/resolve-ai-base-url.sh)"
-else
-  export ANTHROPIC_BASE_URL="http://192.168.1.193:8000/v1"
-fi
-
 # --- Oh My Zsh ---
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="powerlevel10k/powerlevel10k"
 
-# Plugins (only what's useful, no bloat)
 plugins=(
   git              # git aliases & completions
   sudo             # press Esc twice to prefix last command with sudo
@@ -50,10 +44,9 @@ plugins=(
   aliases          # `als` to list aliases
 )
 
-# OMZ settings
 HIST_STAMPS="yyyy-mm-dd"
 COMPLETION_WAITING_DOTS=true
-DISABLE_UNTRACKED_FILES_DIRTY=true  # faster git status in large repos
+DISABLE_UNTRACKED_FILES_DIRTY=true
 
 source $ZSH/oh-my-zsh.sh
 
@@ -98,11 +91,6 @@ alias ports='ss -tulnp'
 alias myip='curl -s ifconfig.me'
 alias reload='source ~/.zshrc'
 
-# passkeyd
-alias passkeys='sudo passkeyd-manager'
-alias passkeyd-logs='journalctl -u passkeyd -f'
-alias passkeyd-rebuild='cd ~/passkeyd-src && cargo build --release -p passkeyd && sudo systemctl stop passkeyd && sudo cp target/release/passkeyd /usr/bin/passkeyd && sudo systemctl start passkeyd && cd -'
-
 # --- History ---
 HISTSIZE=50000
 SAVEHIST=50000
@@ -116,18 +104,9 @@ setopt INC_APPEND_HISTORY
 bindkey '^[[A' history-substring-search-up 2>/dev/null
 bindkey '^[[B' history-substring-search-down 2>/dev/null
 
-# --- Name checker hook (AI filename suggestions) ---
-[ -f "$HOME/.local/share/name-checker/hook.zsh" ] && source "$HOME/.local/share/name-checker/hook.zsh"
-
-# --- Sweep stray files/dirs from ~ on login + every cd into ~ ---
-home_sweep() { [[ "$PWD" == "$HOME" ]] && "$HOME/.local/bin/home-sweep.sh" 2>/dev/null; }
-chpwd_functions+=(home_sweep)
-if [[ -o login ]] && [[ -x "$HOME/.local/bin/home-sweep.sh" ]]; then
-  "$HOME/.local/bin/home-sweep.sh" 2>/dev/null
-fi
-
 # --- Powerlevel10k config ---
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+setopt aliases
 
 # --- Greeting ---
 if [[ -o interactive ]] && command -v fastfetch &>/dev/null; then

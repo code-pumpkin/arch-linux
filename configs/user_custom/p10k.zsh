@@ -31,7 +31,7 @@
   typeset -g POWERLEVEL9K_ICON_PADDING=moderate
   typeset -g POWERLEVEL9K_PROMPT_ADD_NEWLINE=true
   typeset -g POWERLEVEL9K_TRANSIENT_PROMPT=same-dir
-  typeset -g POWERLEVEL9K_INSTANT_PROMPT=verbose
+  typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
   typeset -g POWERLEVEL9K_DISABLE_HOT_RELOAD=true
 
   # No background — clean inline style
@@ -57,6 +57,16 @@
   typeset -g POWERLEVEL9K_DIR_ANCHOR_FOREGROUND=12
   typeset -g POWERLEVEL9K_DIR_ANCHOR_BOLD=true
   typeset -g POWERLEVEL9K_DIR_MAX_LENGTH=60
+  typeset -g POWERLEVEL9K_DIR_CLASSES=(
+    '~/Desktop'   HOME_SUB  '󰍺'
+    '~/Downloads'  HOME_SUB  '󰉍'
+    '~'           HOME      '󰋜'
+    '~/*'         HOME_SUB  '󰉋'
+    '*'           DEFAULT   '󰉋'
+  )
+  typeset -g POWERLEVEL9K_DIR_HOME_FOREGROUND=12
+  typeset -g POWERLEVEL9K_DIR_HOME_SUB_FOREGROUND=12
+  typeset -g POWERLEVEL9K_DIR_DEFAULT_FOREGROUND=12
 
   # Git — green clean (lum ~200), peach dirty (lum ~195), pink conflict (lum ~173)
   typeset -g POWERLEVEL9K_VCS_CLEAN_FOREGROUND=10

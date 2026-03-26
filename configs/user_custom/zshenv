@@ -1,0 +1,17 @@
+# Cargo env (only if installed via rustup)
+[[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"
+
+# Set X11 session type when running under Xorg
+if [ -n "$DISPLAY" ] && [ -z "$XDG_SESSION_TYPE" -o "$XDG_SESSION_TYPE" = "tty" ]; then
+  export XDG_SESSION_TYPE=x11
+  export XDG_SESSION_DESKTOP=i3
+  export XDG_CURRENT_DESKTOP=i3
+fi
+
+# Dark theme for Qt apps
+export QT_QPA_PLATFORMTHEME=qt6ct
+export QT_STYLE_OVERRIDE=Fusion
+export GTK_THEME=Adwaita:dark
+
+# Ensure PATH is set for non-interactive shells too
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"

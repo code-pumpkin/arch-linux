@@ -1,0 +1,178 @@
+/* ============================================
+   Librewolf - Distraction-free Dark UI
+   TST sidebar for tabs, no tab bar
+   ============================================ */
+
+/* ── Ayu Dark palette ── */
+:root {
+  --bg:       #0d1017;
+  --bg-dark:  #0b0e14;
+  --bg-hover: #1a1e29;
+  --bg-sel:   #1d222e;
+  --fg:       #bfbdb6;
+  --fg-dim:   #565b66;
+  --border:   #1d222e;
+  --accent:   #e6b450;
+  --url-color: #CDD6F4;
+}
+
+/* ── Font override for Arabic + Inter UI (only navbar/content, not sidebar) ── */
+#nav-bar *,
+#urlbar *,
+#PersonalToolbar *,
+.findbar-container * {
+  font-family: "Inter", "Noto Sans Arabic", "Noto Serif", sans-serif !important;
+}
+
+/* ── Sidebar action buttons (right-side icons) ── */
+#sidebar-box,
+#sidebar-header,
+#sidebar-switcher-target,
+#sidebarMenu-popup {
+  background: var(--bg-dark) !important;
+  color: var(--fg) !important;
+}
+
+/* Sidebar button strip */
+#sidebar-main {
+  background: var(--bg-dark) !important;
+  border-right: 1px solid var(--border) !important;
+}
+
+#sidebar-main toolbarbutton {
+  color: var(--fg-dim) !important;
+  fill: var(--fg-dim) !important;
+}
+
+#sidebar-main toolbarbutton:hover {
+  color: var(--accent) !important;
+  fill: var(--accent) !important;
+  background: var(--bg-hover) !important;
+}
+
+/* ── Hide native tab bar (using TST) ── */
+#TabsToolbar {
+  visibility: collapse !important;
+}
+
+/* ── Hide title bar spacers ── */
+.titlebar-spacer {
+  display: none !important;
+}
+
+/* ── Move navbar to bottom ── */
+#navigator-toolbox {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 9999 !important;
+}
+
+#nav-bar {
+  background: var(--bg-dark) !important;
+  border-top: 1px solid var(--border) !important;
+  border-bottom: none !important;
+  padding: 2px 4px !important;
+  min-height: 36px !important;
+}
+
+/* Add padding at bottom of content so it doesn't hide behind navbar */
+#browser {
+  padding-bottom: 40px !important;
+}
+
+/* ── URL bar ── */
+#urlbar-background {
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 4px !important;
+}
+
+#urlbar:hover #urlbar-background,
+#urlbar[focused] #urlbar-background {
+  border-color: var(--accent) !important;
+}
+
+#urlbar-input {
+  color: var(--url-color) !important;
+  font-size: 15px !important;
+}
+
+/* ── Toolbar buttons — subtle ── */
+#nav-bar toolbarbutton {
+  opacity: 0.6 !important;
+  transition: opacity 0.15s !important;
+}
+
+#nav-bar toolbarbutton:hover {
+  opacity: 1 !important;
+}
+
+/* ── Hide unnecessary toolbar items ── */
+#star-button-box,
+#tracking-protection-icon-container,
+#page-action-buttons,
+#identity-icon-box {
+  display: none !important;
+}
+
+/* ── Keep reader mode button visible ── */
+#reader-mode-button {
+  opacity: 0.7 !important;
+  display: -moz-box !important;
+}
+
+#reader-mode-button:hover {
+  opacity: 1 !important;
+}
+
+/* ── Sidebar (TST) ── */
+#sidebar-header {
+  display: none !important;
+}
+
+#sidebar-box {
+  background: var(--bg-dark) !important;
+  border-right: 1px solid var(--border) !important;
+  min-width: 180px !important;
+  max-width: 280px !important;
+}
+
+/* ── Findbar ── */
+.findbar-container {
+  background: var(--bg) !important;
+  color: var(--fg) !important;
+  border-top: 1px solid var(--border) !important;
+}
+
+/* ── Autocomplete popup ── */
+#PopupAutoComplete,
+.autocomplete-richlistbox {
+  background: var(--bg) !important;
+  color: var(--fg) !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* ── Context menus ── */
+menupopup {
+  --panel-background: var(--bg) !important;
+  --panel-color: var(--fg) !important;
+  --panel-border-color: var(--border) !important;
+}
+
+menuitem:hover,
+menu:hover {
+  background: var(--bg-hover) !important;
+  color: var(--accent) !important;
+}
+
+/* ── Remove window border padding ── */
+#main-window {
+  padding: 0 !important;
+}
+
+/* ── Smooth transitions ── */
+#navigator-toolbox {
+  transition: background 0.2s !important;
+}
