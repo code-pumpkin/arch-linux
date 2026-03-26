@@ -1,0 +1,4 @@
+Net/ThemeName "Adwaita-dark"
+Gtk/ApplicationPreferDarkTheme 1
+Net/IconThemeName "Adwaita"
+Gtk/FontName "Inter 11"

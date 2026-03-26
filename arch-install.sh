@@ -1785,7 +1785,6 @@ if [ -d /root/wm-configs ] && [ -f /root/wm-configs/index.sh ]; then
     mkdir -p "\$cfg"
     bash /root/wm-configs/index.sh
     chown -R ${username}:${username} "\$home"
-    rm -rf /root/wm-configs
     echo "Config templates deployed to \$cfg/"
 fi
 
@@ -1933,6 +1932,7 @@ if [ "${WM_CHOICE}" = "user_custom" ]; then
 fi
 
 echo "User ${username} created. ${session_hint}"
+rm -rf /root/wm-configs
 USEREOF
 
     chmod +x /mnt/root/user-setup.sh
