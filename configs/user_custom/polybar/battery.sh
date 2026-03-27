@@ -7,6 +7,20 @@ ENERGY_NOW=$(cat "$BAT_PATH/energy_now" 2>/dev/null || echo 0)
 ENERGY_FULL=$(cat "$BAT_PATH/energy_full" 2>/dev/null || echo 1000000)
 POWER_NOW=$(cat "$BAT_PATH/power_now" 2>/dev/null || echo 0)
 
+if [ "$1" = "menu" ]; then
+  if [ "$POWER_NOW" -gt 0 ] 2>/dev/null && [ "$ENERGY_NOW" -gt 0 ] 2>/dev/null; then
+    TIME_SEC=$(((ENERGY_NOW * 3600) / POWER_NOW))
+    HOURS=$((TIME_SEC / 3600))
+    MINS=$(((TIME_SEC % 3600) / 60))
+    TIME_STR="${HOURS}h ${MINS}m remaining"
+  else
+    TIME_STR="Time unknown"
+  fi
+  INFO="Status: $STATUS\nCapacity: $CAPACITY%\n$TIME_STR\nFull: $((ENERGY_FULL / 1000000))Wh  Now: $((ENERGY_NOW / 1000000))Wh"
+  echo -e "$INFO" | rofi -dmenu -i -p "Battery:" -lines 4 2>/dev/null
+  exit 0
+fi
+
 # Safe time calculation
 if [ "$POWER_NOW" -gt 0 ] 2>/dev/null && [ "$ENERGY_NOW" -gt 0 ] 2>/dev/null; then
   TIME_SEC=$(((ENERGY_NOW * 3600) / POWER_NOW))
