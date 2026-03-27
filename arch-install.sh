@@ -1932,6 +1932,15 @@ if [ "${WM_CHOICE}" = "user_custom" ]; then
 fi
 
 echo "User ${username} created. ${session_hint}"
+echo "NOTE: If LibreWolf was installed, open it once after first login, close it, then run:"
+echo "  ~/deploy-librewolf.sh"
+# Copy deploy script + librewolf configs to user home for post-boot use
+if [ -f /root/wm-configs/deploy-librewolf.sh ]; then
+    cp /root/wm-configs/deploy-librewolf.sh /home/${username}/deploy-librewolf.sh
+    cp -r /root/wm-configs/librewolf /home/${username}/librewolf-configs
+    chown -R ${username}:${username} /home/${username}/deploy-librewolf.sh /home/${username}/librewolf-configs
+    chmod +x /home/${username}/deploy-librewolf.sh
+fi
 rm -rf /root/wm-configs
 USEREOF
 
