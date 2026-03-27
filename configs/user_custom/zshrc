@@ -63,6 +63,10 @@ export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
 export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border --info=inline'
 
+# --- LS_COLORS (override harsh blue on dirs) ---
+export LS_COLORS="di=38;5;109:ln=38;5;108:ex=38;5;167:fi=38;5;252:*.tar=38;5;167:*.zip=38;5;167:*.gz=38;5;167"
+export EZA_COLORS="di=38;5;109:ln=38;5;108:ex=38;5;167"
+
 # --- Aliases ---
 alias ls='eza --icons --group-directories-first'
 alias ll='eza -la --icons --group-directories-first'
