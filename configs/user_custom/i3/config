@@ -225,14 +225,14 @@ gaps outer 2
 smart_gaps on
 smart_borders on
 
-# Window colors — deep navy + soft blue
+# Window colors — slate/mist theme
 #                       border  bg      text    indicator child_border
-client.focused          #89B4FA #1E1E2E #CDD6F4 #94E2D5   #89B4FA
-client.focused_inactive #1E1E2E #1E1E2E #585B70 #1E1E2E   #1E1E2E
-client.unfocused        #11111B #11111B #585B70 #11111B    #11111B
-client.urgent           #F38BA8 #F38BA8 #11111B #F38BA8    #F38BA8
-client.placeholder      #11111B #11111B #CDD6F4 #11111B    #11111B
-client.background       #11111B
+client.focused          #BEC9C6 #1E1E22 #D8DBDD #8FB5A4   #BEC9C6
+client.focused_inactive #1E1E22 #1E1E22 #5A5E62 #1E1E22   #1E1E22
+client.unfocused        #141417 #141417 #5A5E62 #141417   #141417
+client.urgent           #CC6666 #CC6666 #141417 #CC6666   #CC6666
+client.placeholder      #141417 #141417 #D8DBDD #141417   #141417
+client.background       #141417
 
 for_window [class="^.*"] title_format "%class"
 for_window [class="librewolf"] border pixel 1
