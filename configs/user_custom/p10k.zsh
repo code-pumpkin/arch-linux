@@ -46,15 +46,15 @@
   typeset -g POWERLEVEL9K_RIGHT_PROMPT_LAST_SEGMENT_END_SYMBOL=''
   typeset -g POWERLEVEL9K_EMPTY_LINE_LEFT_PROMPT_LAST_SEGMENT_END_SYMBOL=
 
-  # OS icon — muted teal
-  typeset -g POWERLEVEL9K_OS_ICON_FOREGROUND=109
+  # OS icon — sage green
+  typeset -g POWERLEVEL9K_OS_ICON_FOREGROUND=108
 
-  # Directory — steel grey-teal (109), no blue
-  typeset -g POWERLEVEL9K_DIR_FOREGROUND=109
+  # Directory — sage green, no teal/blue
+  typeset -g POWERLEVEL9K_DIR_FOREGROUND=108
   typeset -g POWERLEVEL9K_SHORTEN_STRATEGY=truncate_to_unique
   typeset -g POWERLEVEL9K_SHORTEN_DELIMITER=
   typeset -g POWERLEVEL9K_DIR_SHORTENED_FOREGROUND=242
-  typeset -g POWERLEVEL9K_DIR_ANCHOR_FOREGROUND=109
+  typeset -g POWERLEVEL9K_DIR_ANCHOR_FOREGROUND=108
   typeset -g POWERLEVEL9K_DIR_ANCHOR_BOLD=true
   typeset -g POWERLEVEL9K_DIR_MAX_LENGTH=60
   typeset -g POWERLEVEL9K_DIR_CLASSES=(
@@ -64,13 +64,13 @@
     '~/*'         HOME_SUB  '󰉋'
     '*'           DEFAULT   '󰉋'
   )
-  typeset -g POWERLEVEL9K_DIR_HOME_FOREGROUND=109
-  typeset -g POWERLEVEL9K_DIR_HOME_SUB_FOREGROUND=109
-  typeset -g POWERLEVEL9K_DIR_DEFAULT_FOREGROUND=109
+  typeset -g POWERLEVEL9K_DIR_HOME_FOREGROUND=108
+  typeset -g POWERLEVEL9K_DIR_HOME_SUB_FOREGROUND=108
+  typeset -g POWERLEVEL9K_DIR_DEFAULT_FOREGROUND=108
 
-  # Git — sage green clean, muted teal modified, terracotta untracked, soft red conflict
+  # Git — sage green clean, warm sand modified, terracotta untracked, soft red conflict
   typeset -g POWERLEVEL9K_VCS_CLEAN_FOREGROUND=108
-  typeset -g POWERLEVEL9K_VCS_MODIFIED_FOREGROUND=73
+  typeset -g POWERLEVEL9K_VCS_MODIFIED_FOREGROUND=179
   typeset -g POWERLEVEL9K_VCS_UNTRACKED_FOREGROUND=179
   typeset -g POWERLEVEL9K_VCS_CONFLICTED_FOREGROUND=167
   typeset -g POWERLEVEL9K_VCS_LOADING_FOREGROUND=242

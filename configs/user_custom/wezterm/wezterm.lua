@@ -21,8 +21,8 @@ config.colors = {
   cursor_bg = '#BEC9C6',
   selection_fg = '#000000',
   selection_bg = '#BEC9C6',
-  ansi    = { '#000000', '#CC6666', '#7A9E8E', '#C4A882', '#8AABB0', '#A899B8', '#8FB5A4', '#BEC9C6' },
-  brights = { '#5A5E62', '#CC6666', '#8FB5A4', '#D4BC96', '#9BBEC4', '#B8ADCC', '#9EC4B3', '#C8CBCD' },
+  ansi    = { '#000000', '#CC6666', '#7A9E8E', '#C4A882', '#7A9E8E', '#A899B8', '#8FB5A4', '#BEC9C6' },
+  brights = { '#5A5E62', '#CC6666', '#8FB5A4', '#D4BC96', '#8FB5A4', '#B8ADCC', '#9EC4B3', '#C8CBCD' },
 }
 config.window_background_opacity = 1.0
 config.hide_tab_bar_if_only_one_tab = true
