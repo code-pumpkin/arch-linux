@@ -1896,7 +1896,7 @@ if [ "${WM_CHOICE}" = "user_custom" ]; then
     if command -v ${AUR_HELPER%%-bin*} &>/dev/null; then
         sudo -u ${username} ${AUR_HELPER%%-bin*} -S --noconfirm --needed \
             vibrant-cli ttf-amiri \
-            rustdesk-bin nchat-git discordo-git \
+            rustdesk-bin \
             openboardview-git carbonyl brow6el-git \
             nerd-dictation-git \
             2>/dev/null || echo "NOTE: Some AUR packages may have failed (check above)."
