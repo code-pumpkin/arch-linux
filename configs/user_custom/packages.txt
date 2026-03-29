@@ -1,0 +1,104 @@
+# user_custom (Hafeezh's i3 rice) — pacman packages
+# One package per line. Lines starting with # are ignored.
+
+# Window manager & X11
+i3-wm
+i3status
+i3lock
+polybar
+dunst
+rofi
+picom
+feh
+kitty
+flameshot
+fastfetch
+thunar
+xorg-server
+xorg-xinit
+xorg-xrandr
+xorg-xsetroot
+dex
+xsecurelock
+xss-lock
+
+# Networking & VPN
+network-manager-applet
+openvpn
+expect
+
+# Hardware & drivers
+lm_sensors
+input-leap
+nvidia-prime
+dkms
+linux-headers
+bolt
+
+# Fonts
+otf-font-awesome
+ttf-nerd-fonts-symbols
+ttf-nerd-fonts-symbols-common
+inter-font
+noto-fonts-extra
+noto-fonts-emoji
+otf-opendyslexic-nerd
+
+# Shell
+zsh
+zsh-autosuggestions
+zsh-syntax-highlighting
+
+# CLI tools
+fzf
+bat
+eza
+zoxide
+fd
+ripgrep
+btop
+iftop
+tree
+rsync
+
+# Document viewer
+zathura
+zathura-pdf-mupdf
+zenity
+
+# Dev tools & languages
+nodejs
+npm
+python
+python-pip
+rustup
+go
+base-devel
+openbsd-netcat
+
+# Android
+android-tools
+scrcpy
+
+# Apps & media
+qutebrowser
+wezterm
+lf
+yazi
+mpv
+sxiv
+redshift
+gnuradio
+
+# Postgres client
+postgresql-libs
+
+# Dark theme / Qt / GTK / input
+qt5ct
+qt6ct
+xsettingsd
+xdg-desktop-portal-gtk
+fcitx5
+fcitx5-gtk
+fcitx5-qt
+fcitx5-configtool

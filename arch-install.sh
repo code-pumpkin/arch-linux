@@ -1106,7 +1106,9 @@ mkinitcpio -P
 
 # Root password
 echo "Set root password:"
-passwd
+while ! passwd; do
+    echo "Password mismatch, try again."
+done
 
 echo "System configuration complete."
 CHROOTEOF
@@ -1463,53 +1465,14 @@ install_packages() {
     # WM-specific packages
     local wm_pkgs=""
     case "$WM_CHOICE" in
-        i3)
-            wm_pkgs="i3-wm i3status i3lock polybar dunst rofi picom feh alacritty flameshot ly"
-            wm_pkgs="$wm_pkgs xorg-server xorg-xinit xorg-xrandr xorg-xsetroot dex"
-            wm_pkgs="$wm_pkgs network-manager-applet xss-lock"
-            ;;
-        user_custom)
-            wm_pkgs="i3-wm i3status i3lock polybar dunst rofi picom feh kitty flameshot fastfetch thunar"
-            wm_pkgs="$wm_pkgs xorg-server xorg-xinit xorg-xrandr xorg-xsetroot dex xsecurelock xss-lock"
-            wm_pkgs="$wm_pkgs network-manager-applet lm_sensors openvpn expect"
-            wm_pkgs="$wm_pkgs input-leap otf-font-awesome ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-common nvidia-prime dkms linux-headers bolt"
-            wm_pkgs="$wm_pkgs zsh zsh-autosuggestions zsh-syntax-highlighting zathura zathura-pdf-mupdf zenity"
-            wm_pkgs="$wm_pkgs fzf bat eza zoxide fd ripgrep btop iftop tree"
-            # Dev tools & languages
-            wm_pkgs="$wm_pkgs rsync nodejs npm python python-pip rustup go base-devel openbsd-netcat"
-            # Android
-            wm_pkgs="$wm_pkgs android-tools scrcpy"
-            # Apps & media
-            wm_pkgs="$wm_pkgs qutebrowser wezterm lf yazi mpv sxiv redshift gnuradio"
-            # Postgres client
-            wm_pkgs="$wm_pkgs postgresql-libs"
-            # Dark theme / Qt / GTK / fonts / input
-            wm_pkgs="$wm_pkgs qt5ct qt6ct xsettingsd xdg-desktop-portal-gtk"
-            wm_pkgs="$wm_pkgs inter-font noto-fonts-extra noto-fonts-emoji otf-opendyslexic-nerd"
-            wm_pkgs="$wm_pkgs fcitx5 fcitx5-gtk fcitx5-qt fcitx5-configtool"
-            ;;
-        sway)
-            wm_pkgs="sway swaylock swayidle waybar mako wofi foot grim slurp ly"
-            wm_pkgs="$wm_pkgs xorg-xwayland xdg-desktop-portal-wlr"
-            ;;
-        hyprland)
-            wm_pkgs="hyprland waybar mako wofi foot grim slurp ly"
-            wm_pkgs="$wm_pkgs xorg-xwayland xdg-desktop-portal-hyprland"
-            ;;
-        kde)
-            wm_pkgs="plasma-meta kde-applications-meta sddm"
-            ;;
         none)
             info "No graphical packages will be installed."
             ;;
         *)
-            # Custom remote or unknown — check for a packages.txt in the config
             if [ -f "$SCRIPT_DIR/configs/$WM_CHOICE/packages.txt" ]; then
-                wm_pkgs=$(grep -v '^#' "$SCRIPT_DIR/configs/$WM_CHOICE/packages.txt" | tr '\n' ' ')
-                info "Loaded packages from custom config's packages.txt"
+                wm_pkgs=$(grep -v '^#' "$SCRIPT_DIR/configs/$WM_CHOICE/packages.txt" | grep -v '^$' | tr '\n' ' ')
             else
-                info "No packages.txt found in custom config — only base packages will be installed."
-                info "You can install additional packages after reboot."
+                info "No packages.txt found in configs/$WM_CHOICE — only base packages will be installed."
             fi
             ;;
     esac
@@ -1769,7 +1732,9 @@ else
     useradd -m -G wheel,video,input -s /bin/bash ${username}
 fi
 echo "Set password for ${username}:"
-passwd ${username}
+while ! passwd ${username}; do
+    echo "Password mismatch, try again."
+done
 
 sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 

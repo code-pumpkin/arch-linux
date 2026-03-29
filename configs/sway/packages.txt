@@ -1,0 +1,15 @@
+# Sway — pacman packages
+
+# Compositor & Wayland
+sway
+swaylock
+swayidle
+waybar
+mako
+wofi
+foot
+grim
+slurp
+ly
+xorg-xwayland
+xdg-desktop-portal-wlr

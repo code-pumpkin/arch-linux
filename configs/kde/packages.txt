@@ -1,0 +1,5 @@
+# KDE Plasma — pacman packages
+
+plasma-meta
+kde-applications-meta
+sddm
