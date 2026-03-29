@@ -60,24 +60,51 @@ for qt in qt5ct qt6ct; do
     fi
 done
 
-# --- Librewolf (run headless to generate profile, then deploy) ---
+# --- Librewolf (bootstrap profile dir if missing, then deploy) ---
 if [ -d "$SRC/librewolf" ]; then
-    sudo -u "$username" timeout 5 librewolf --headless 2>/dev/null || true
-    sleep 2
     lw_dir="$home/.librewolf"
-    if [ -f "$lw_dir/profiles.ini" ]; then
-        lw_profile=$(grep -oP 'Path=\K.*' "$lw_dir/profiles.ini" | head -1)
-        if [ -n "$lw_profile" ]; then
-            mkdir -p "$lw_dir/$lw_profile/chrome" "$lw_dir/$lw_profile/extensions"
-            cp "$SRC/librewolf/user.js" "$lw_dir/$lw_profile/"
-            cp "$SRC/librewolf/search.json.mozlz4" "$lw_dir/$lw_profile/" 2>/dev/null || true
-            cp "$SRC/librewolf/chrome/"* "$lw_dir/$lw_profile/chrome/" 2>/dev/null || true
-            cp "$SRC/librewolf/extensions/"* "$lw_dir/$lw_profile/extensions/" 2>/dev/null || true
-            cp "$SRC/librewolf/.tridactylrc" "$home/.tridactylrc" 2>/dev/null || true
-            chown -R "$username:$username" "$lw_dir"
-            echo "Librewolf profile configured."
-        fi
-    else
-        echo "NOTE: Librewolf profile not generated — run librewolf once after reboot, then re-deploy configs."
+
+    if [ ! -f "$lw_dir/profiles.ini" ]; then
+        # Profile ID: 8 random alphanumeric chars (matches Firefox's real format)
+        profile_id="$(tr -dc 'a-z0-9' < /dev/urandom | head -c 8).default-default"
+        # Install hash is fixed — Firefox derives it from the install path (/usr/lib/librewolf)
+        # and is consistent across all Arch installs of librewolf-bin
+        install_hash="6C1CE26D3274EA5B"
+
+        mkdir -p "$lw_dir/$profile_id/chrome" "$lw_dir/$profile_id/extensions"
+
+        cat > "$lw_dir/profiles.ini" <<EOF
+[Profile0]
+Name=default
+IsRelative=1
+Path=${profile_id}
+
+[General]
+StartWithLastProfile=1
+Version=2
+
+[Install${install_hash}]
+Default=${profile_id}
+Locked=1
+EOF
+
+        cat > "$lw_dir/installs.ini" <<EOF
+[${install_hash}]
+Default=${profile_id}
+Locked=1
+EOF
+        echo "Librewolf profile directory bootstrapped: $profile_id"
+    fi
+
+    lw_profile=$(grep -oP 'Path=\K.*' "$lw_dir/profiles.ini" | head -1)
+    if [ -n "$lw_profile" ]; then
+        mkdir -p "$lw_dir/$lw_profile/chrome" "$lw_dir/$lw_profile/extensions"
+        cp "$SRC/librewolf/user.js"              "$lw_dir/$lw_profile/"
+        cp "$SRC/librewolf/search.json.mozlz4"   "$lw_dir/$lw_profile/" 2>/dev/null || true
+        cp "$SRC/librewolf/chrome/"*             "$lw_dir/$lw_profile/chrome/" 2>/dev/null || true
+        cp "$SRC/librewolf/extensions/"*         "$lw_dir/$lw_profile/extensions/" 2>/dev/null || true
+        cp "$SRC/librewolf/.tridactylrc"         "$home/.tridactylrc" 2>/dev/null || true
+        chown -R "$username:$username" "$lw_dir"
+        echo "Librewolf profile configured: $lw_profile"
     fi
 fi
