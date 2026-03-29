@@ -1474,7 +1474,7 @@ install_packages() {
             wm_pkgs="$wm_pkgs network-manager-applet lm_sensors openvpn expect"
             wm_pkgs="$wm_pkgs input-leap otf-font-awesome ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-common nvidia-prime dkms linux-headers bolt"
             wm_pkgs="$wm_pkgs zsh zsh-autosuggestions zsh-syntax-highlighting zathura zathura-pdf-mupdf zenity"
-            wm_pkgs="$wm_pkgs fzf bat eza zoxide fd ripgrep"
+            wm_pkgs="$wm_pkgs fzf bat eza zoxide fd ripgrep btop iftop tree"
             # Dev tools & languages
             wm_pkgs="$wm_pkgs rsync nodejs npm python python-pip rustup go base-devel openbsd-netcat"
             # Android
