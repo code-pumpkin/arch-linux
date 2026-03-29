@@ -14,12 +14,14 @@ esac
 
 FULL_QUERY=$(setxkbmap -query 2>/dev/null)
 
+ICON=$'%{T2}\uf11c%{T-}'
+
 if echo "$FULL_QUERY" | grep -q "colemak_dh"; then
-  echo "%{T2}%{T-} C-DH"
+  echo "${ICON} C-DH"
 elif echo "$FULL_QUERY" | grep -q "colemak"; then
-  echo "%{T2}%{T-} CMK"
+  echo "${ICON} CMK"
 elif echo "$FULL_QUERY" | grep -q "layout:.*us"; then
-  echo "%{T2}%{T-} US"
+  echo "${ICON} US"
 else
-  echo "%{T2}%{T-} ??"
+  echo "${ICON} ??"
 fi
