@@ -24,8 +24,14 @@ Boot into the Arch live ISO, connect to wifi, then:
 
 ```bash
 iwctl station wlan0 connect <SSID>
-git clone https://gitlab.com/code-pumpkin/arch-linux.git
-cd arch-linux
+
+# Latest release
+curl -LO https://gitlab.com/code-pumpkin/arch-linux/-/archive/main/arch-linux-main.tar.gz
+tar xzf arch-linux-main.tar.gz && cd arch-linux-main
+
+# Or clone the repo
+git clone https://gitlab.com/code-pumpkin/arch-linux.git && cd arch-linux
+
 chmod +x arch-install.sh
 ./arch-install.sh
 ```
@@ -51,19 +57,28 @@ Option 2 deploys a full i3 rice with:
 ## Directory Structure
 
 ```
-arch-installer/
+arch-linux/
 ├── arch-install.sh          # Main installer script
 ├── configs/
 │   ├── i3/                  # Starter i3 config (alacritty, polybar, picom, dunst, rofi)
+│   │   └── packages.txt     # i3 packages
 │   ├── user_custom/         # Full i3 rice (kitty, 14 polybar scripts, sounds, etc.)
-│   │   ├── egpu/            # NVIDIA eGPU setup (bolt, systemd, xorg)
+│   │   ├── packages.txt     # user_custom packages
+│   │   ├── librewolf/       # LibreWolf extensions, chrome CSS, user.js
+│   │   ├── deploy-librewolf.sh
 │   │   └── screenlayout/    # Display layout scripts
 │   ├── sway/                # Sway + waybar, mako, wofi, foot
+│   │   └── packages.txt
 │   ├── hyprland/            # Hyprland + waybar, wofi, foot
-│   └── kde/                 # KDE kwinrc + plasma panel layout
+│   │   └── packages.txt
+│   ├── kde/                 # KDE kwinrc + plasma panel layout
+│   │   └── packages.txt
+│   └── custom_template/     # Template for creating your own config
 ├── fonts/                   # Custom TTF fonts (JetBrains Mono Nerd, Iosevka, etc.)
 └── README.md
 ```
+
+Each config directory owns its own `packages.txt` — add or remove packages there without touching `arch-install.sh`.
 
 ## Requirements
 
