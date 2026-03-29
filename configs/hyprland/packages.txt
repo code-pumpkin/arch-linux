@@ -1,0 +1,13 @@
+# Hyprland — pacman packages
+
+# Compositor & Wayland
+hyprland
+waybar
+mako
+wofi
+foot
+grim
+slurp
+ly
+xorg-xwayland
+xdg-desktop-portal-hyprland

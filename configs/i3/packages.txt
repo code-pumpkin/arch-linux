@@ -1,0 +1,23 @@
+# i3 — pacman packages
+
+# Window manager & X11
+i3-wm
+i3status
+i3lock
+polybar
+dunst
+rofi
+picom
+feh
+alacritty
+flameshot
+ly
+xorg-server
+xorg-xinit
+xorg-xrandr
+xorg-xsetroot
+dex
+
+# Networking
+network-manager-applet
+xss-lock

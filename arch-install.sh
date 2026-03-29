@@ -1465,41 +1465,14 @@ install_packages() {
     # WM-specific packages
     local wm_pkgs=""
     case "$WM_CHOICE" in
-        i3)
-            wm_pkgs="i3-wm i3status i3lock polybar dunst rofi picom feh alacritty flameshot ly"
-            wm_pkgs="$wm_pkgs xorg-server xorg-xinit xorg-xrandr xorg-xsetroot dex"
-            wm_pkgs="$wm_pkgs network-manager-applet xss-lock"
-            ;;
-        user_custom)
-            if [ -f "$SCRIPT_DIR/configs/user_custom/packages.txt" ]; then
-                wm_pkgs=$(grep -v '^#' "$SCRIPT_DIR/configs/user_custom/packages.txt" | grep -v '^$' | tr '\n' ' ')
-            else
-                err "configs/user_custom/packages.txt not found!"
-                exit 1
-            fi
-            ;;
-        sway)
-            wm_pkgs="sway swaylock swayidle waybar mako wofi foot grim slurp ly"
-            wm_pkgs="$wm_pkgs xorg-xwayland xdg-desktop-portal-wlr"
-            ;;
-        hyprland)
-            wm_pkgs="hyprland waybar mako wofi foot grim slurp ly"
-            wm_pkgs="$wm_pkgs xorg-xwayland xdg-desktop-portal-hyprland"
-            ;;
-        kde)
-            wm_pkgs="plasma-meta kde-applications-meta sddm"
-            ;;
         none)
             info "No graphical packages will be installed."
             ;;
         *)
-            # Custom remote or unknown — check for a packages.txt in the config
             if [ -f "$SCRIPT_DIR/configs/$WM_CHOICE/packages.txt" ]; then
-                wm_pkgs=$(grep -v '^#' "$SCRIPT_DIR/configs/$WM_CHOICE/packages.txt" | tr '\n' ' ')
-                info "Loaded packages from custom config's packages.txt"
+                wm_pkgs=$(grep -v '^#' "$SCRIPT_DIR/configs/$WM_CHOICE/packages.txt" | grep -v '^$' | tr '\n' ' ')
             else
-                info "No packages.txt found in custom config — only base packages will be installed."
-                info "You can install additional packages after reboot."
+                info "No packages.txt found in configs/$WM_CHOICE — only base packages will be installed."
             fi
             ;;
     esac
