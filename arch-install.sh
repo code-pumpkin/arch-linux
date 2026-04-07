@@ -78,7 +78,10 @@ classify_partition() {
     fi
 
     case "$fstype" in
-        vfat|fat32)       echo "efi" ;;
+        vfat|fat32)
+            # Only classify as EFI if it has the EFI GUID (already caught above)
+            # Standalone vfat without EFI GUID is just a data partition
+            echo "unknown" ;;
         swap)             echo "swap" ;;
         ext2|ext3|ext4|btrfs|xfs|f2fs|LVM2_member) echo "linux" ;;
         crypto_LUKS)      echo "luks" ;;
@@ -89,20 +92,30 @@ classify_partition() {
 }
 
 # Get free (unpartitioned) space on a disk in GiB
+# Uses sgdisk to find the largest contiguous free region
 get_free_space_gib() {
     local disk="$1"
-    # sgdisk -F returns first free sector, -E returns last free sector
-    local first_free last_free sector_size free_bytes
-    first_free=$(sgdisk -F "$disk" 2>/dev/null) || { echo "0"; return; }
-    last_free=$(sgdisk -E "$disk" 2>/dev/null) || { echo "0"; return; }
+    local sector_size max_free_sectors
     sector_size=$(blockdev --getss "$disk" 2>/dev/null || echo 512)
+    # sgdisk -p shows partition table; parse free space from gaps
+    # Fallback: use -F/-E for simple case
+    max_free_sectors=0
+    local prev_end=34  # GPT header
+    while read -r start end _rest; do
+        local gap=$(( start - prev_end - 1 ))
+        [ "$gap" -gt "$max_free_sectors" ] && max_free_sectors=$gap
+        prev_end=$end
+    done < <(sgdisk -p "$disk" 2>/dev/null | awk '/^ *[0-9]/ {print $2, $3}')
+    # Check gap after last partition
+    local disk_end
+    disk_end=$(sgdisk -E "$disk" 2>/dev/null) || { echo "0"; return; }
+    local tail_gap=$(( disk_end - prev_end ))
+    [ "$tail_gap" -gt "$max_free_sectors" ] && max_free_sectors=$tail_gap
 
-    if [ -z "$first_free" ] || [ -z "$last_free" ] || [ "$first_free" -ge "$last_free" ] 2>/dev/null; then
+    if [ "$max_free_sectors" -le 0 ]; then
         echo "0"; return
     fi
-
-    free_bytes=$(( (last_free - first_free + 1) * sector_size ))
-    echo $(( free_bytes / 1024 / 1024 / 1024 ))
+    echo $(( max_free_sectors * sector_size / 1024 / 1024 / 1024 ))
 }
 
 cleanup() {
@@ -419,12 +432,25 @@ handle_existing_disk() {
             ;;
         free)
             msg "Will create partitions in the ${free_gib} GiB of free space."
+            # Ensure EFI is detected for free-space installs (dual-boot)
+            if [ "$EFI_REUSE" = false ] && [ -z "$EFI_PART" ]; then
+                local efi_parts
+                mapfile -t efi_parts < <(lsblk -lpno NAME,PARTTYPE "$DISK" | grep -i "c12a7328-f81f-11d2-ba4b-00a0c93ec93b" | awk '{print $1}')
+                if [ ${#efi_parts[@]} -gt 0 ] && [ -n "${efi_parts[0]}" ]; then
+                    EFI_PART="${efi_parts[0]}"
+                    EFI_REUSE=true
+                    msg "Auto-reusing existing EFI partition: $EFI_PART"
+                fi
+            fi
             ;;
         reuse)
             reuse_existing_partition
             ;;
         shrink)
             shrink_partition
+            # Refresh partition table after shrink
+            partprobe "$DISK" 2>/dev/null
+            udevadm settle 2>/dev/null || sleep 2
             ;;
     esac
 }
@@ -507,6 +533,16 @@ reuse_existing_partition() {
                 partprobe "$DISK" 2>/dev/null
                 udevadm settle 2>/dev/null || sleep 2
                 msg "Deleted $picked. Free space available for new partitions."
+                # Re-detect EFI since we're falling through to create_partitions
+                if [ -z "$EFI_PART" ] || [ "$EFI_REUSE" = false ]; then
+                    local efi_parts
+                    mapfile -t efi_parts < <(lsblk -lpno NAME,PARTTYPE "$DISK" | grep -i "c12a7328-f81f-11d2-ba4b-00a0c93ec93b" | awk '{print $1}')
+                    if [ ${#efi_parts[@]} -gt 0 ] && [ -n "${efi_parts[0]}" ]; then
+                        EFI_PART="${efi_parts[0]}"
+                        EFI_REUSE=true
+                        msg "Auto-reusing existing EFI partition: $EFI_PART"
+                    fi
+                fi
                 REUSE_EXISTING=false
                 return
                 ;;
